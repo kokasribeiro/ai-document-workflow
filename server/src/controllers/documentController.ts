@@ -17,7 +17,7 @@ export async function getDocuments(req: Request, res: Response) {
 
 export async function getDocumentById(req: Request, res: Response) {
   try {
-    const { id } = req.params
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id
 
     const document = await prisma.document.findUnique({
       where: { id },
@@ -69,7 +69,7 @@ export async function createDocument(req: Request, res: Response) {
 
 export async function updateDocument(req: Request, res: Response) {
   try {
-    const { id } = req.params
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id
     const {
       title,
       description,
@@ -107,7 +107,7 @@ export async function updateDocument(req: Request, res: Response) {
 
 export async function deleteDocument(req: Request, res: Response) {
   try {
-    const { id } = req.params
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id
 
     const existing = await prisma.document.findUnique({
       where: { id },

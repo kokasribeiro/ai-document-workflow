@@ -18,10 +18,20 @@
       <p class="text-xs font-semibold text-slate-500">AI Summary</p>
       <p class="mt-1 text-sm text-slate-700">{{ document.aiSummary }}</p>
     </div>
+
+    <div class="mt-4">
+      <RouterLink
+        :to="`/documents/${document.id}`"
+        class="text-sm font-medium text-slate-700 underline"
+      >
+        View details
+      </RouterLink>
+    </div>
   </article>
 </template>
 
 <script setup lang="ts">
+import { RouterLink } from 'vue-router'
 import type { DocumentItem } from '../../types/document'
 import StatusBadge from './StatusBadge.vue'
 

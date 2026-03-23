@@ -22,6 +22,8 @@ const badgeClass = computed(() => {
       return 'bg-emerald-100 text-emerald-700'
     case 'Rejected':
       return 'bg-rose-100 text-rose-700'
+    default:
+      return 'bg-slate-200 text-slate-700'
   }
 })
 </script>
