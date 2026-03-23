@@ -1,13 +1,15 @@
-<script setup lang="ts">
-import { RouterLink } from 'vue-router'
-</script>
-
 <template>
-  <aside class="w-64 border-r border-slate-200 p-4">
-    <nav class="flex flex-col gap-2">
-      <RouterLink to="/">Dashboard</RouterLink>
-      <RouterLink to="/documents">Documents</RouterLink>
-      <RouterLink to="/documents/new">New Document</RouterLink>
+  <aside class="hidden w-64 border-r bg-white p-4 md:block">
+    <nav class="space-y-2">
+      <RouterLink class="block rounded px-3 py-2 hover:bg-slate-100" to="/">
+        Dashboard
+      </RouterLink>
+      <RouterLink class="block rounded px-3 py-2 hover:bg-slate-100" to="/documents">
+        Documents
+      </RouterLink>
+      <RouterLink class="block rounded px-3 py-2 hover:bg-slate-100" to="/documents/new">
+        New Document
+      </RouterLink>
     </nav>
   </aside>
 </template>
