@@ -6,13 +6,17 @@ import {
   getDocuments,
   updateDocument,
 } from '../controllers/documentController'
+import {
+  validateCreateDocument,
+  validateUpdateDocument,
+} from '../middlewares/documentValidation'
 
 const router = Router()
 
 router.get('/', getDocuments)
 router.get('/:id', getDocumentById)
-router.post('/', createDocument)
-router.put('/:id', updateDocument)
+router.post('/', validateCreateDocument, createDocument)
+router.put('/:id', validateUpdateDocument, updateDocument)
 router.delete('/:id', deleteDocument)
 
 export default router

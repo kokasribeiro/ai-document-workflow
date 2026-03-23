@@ -12,12 +12,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum DocumentStatus {
+  Draft
+  Review
+  Approved
+  Rejected
+}
+
 model Document {
   id                  String   @id @default(uuid())
   title               String
   description         String
   category            String
-  status              String
+  status              DocumentStatus
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
   aiSummary           String?
