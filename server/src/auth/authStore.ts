@@ -1,7 +1,9 @@
-import { randomUUID } from 'crypto'
 import dotenv from 'dotenv'
 import { readFileSync, writeFileSync } from 'fs'
 import path from 'path'
+import crypto from 'crypto'
+import { Prisma } from '@prisma/client'
+import { prisma } from '../lib/prisma'
 
 dotenv.config()
 
@@ -19,27 +21,6 @@ export interface AppUser {
   role: UserRole
 }
 
-export interface AppSession {
-  token: string
-  userId: string
-}
-
-const users: AppUser[] = [
-  {
-    id: randomUUID(),
-    email: process.env.CEO_EMAIL ?? 'ceo@gmail.com',
-    username: process.env.CEO_USERNAME ?? 'ceo',
-    birthDate: process.env.CEO_BIRTHDATE ?? '1990-01-01',
-    name: process.env.CEO_NAME ?? 'Chief Executive Officer',
-    address: '',
-    phone: '',
-    password: process.env.CEO_PASSWORD ?? 'test123',
-    role: 'CEO',
-  },
-]
-
-const sessions: AppSession[] = []
-
 export interface CreateUserInput {
   email: string
   username: string
@@ -49,66 +30,185 @@ export interface CreateUserInput {
 
 export interface UpdateProfileInput {
   email?: string
+  username?: string
   name?: string
   address?: string
   phone?: string
 }
 
-export function createUser(input: CreateUserInput): AppUser {
+function mapRole(role: string): UserRole {
+  return role === 'CEO' ? 'CEO' : 'USER'
+}
+
+function mapUser(user: {
+  id: string
+  email: string
+  username: string
+  birthDate: Date
+  name: string
+  address: string
+  phone: string
+  password: string
+  role: string
+}): AppUser {
+  return {
+    id: user.id,
+    email: user.email,
+    username: user.username,
+    birthDate: user.birthDate.toISOString().slice(0, 10),
+    name: user.name,
+    address: user.address,
+    phone: user.phone,
+    password: user.password,
+    role: mapRole(user.role),
+  }
+}
+
+export async function ensureSeedCeo(): Promise<void> {
+  const ceoEmail = (process.env.CEO_EMAIL ?? 'ceo@gmail.com').trim().toLowerCase()
+  const ceoUsername = (process.env.CEO_USERNAME ?? 'ceo').trim().toLowerCase()
+  const ceoBirthDate = process.env.CEO_BIRTHDATE ?? '1990-01-01'
+  const ceoName = process.env.CEO_NAME ?? 'Chief Executive Officer'
+  const ceoPassword = process.env.CEO_PASSWORD ?? 'test123'
+
+  const existingCeo = await prisma.user.findFirst({
+    where: { OR: [{ role: 'CEO' }, { email: ceoEmail }] },
+  })
+
+  if (existingCeo) {
+    await prisma.user.update({
+      where: { id: existingCeo.id },
+      data: {
+        email: ceoEmail,
+        username: ceoUsername,
+        birthDate: new Date(ceoBirthDate),
+        name: ceoName,
+        role: 'CEO',
+      },
+    })
+    return
+  }
+
+  await prisma.user.create({
+    data: {
+      email: ceoEmail,
+      username: ceoUsername,
+      birthDate: new Date(ceoBirthDate),
+      name: ceoName,
+      address: '',
+      phone: '',
+      password: ceoPassword,
+      role: 'CEO',
+    },
+  })
+}
+
+export async function createUser(input: CreateUserInput): Promise<AppUser> {
   if (input.username.trim().toLowerCase() === 'ceo') {
     throw new Error('Username "ceo" is reserved')
   }
-  const existingEmail = users.find((u) => u.email.toLowerCase() === input.email.toLowerCase())
+  const email = input.email.toLowerCase()
+  const username = input.username.toLowerCase()
+  const existingEmail = await prisma.user.findUnique({ where: { email } })
   if (existingEmail) throw new Error('Email already registered')
-  const existingUsername = users.find((u) => u.username.toLowerCase() === input.username.toLowerCase())
+  const existingUsername = await prisma.user.findUnique({ where: { username } })
   if (existingUsername) throw new Error('Username already registered')
-  const user: AppUser = {
-    id: randomUUID(),
-    email: input.email,
-    username: input.username,
-    birthDate: input.birthDate,
-    name: '',
-    address: '',
-    phone: '',
-    password: input.password,
-    role: 'USER',
+  try {
+    const user = await prisma.user.create({
+      data: {
+        email,
+        username,
+        birthDate: new Date(input.birthDate),
+        name: '',
+        address: '',
+        phone: '',
+        password: input.password,
+        role: 'USER',
+      },
+    })
+    return mapUser(user)
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      const target = Array.isArray(error.meta?.target) ? error.meta.target.join(',') : ''
+      if (target.includes('email')) throw new Error('Email already registered')
+      if (target.includes('username')) throw new Error('Username already registered')
+    }
+    throw error
   }
-  users.push(user)
-  return user
 }
 
-export function getUserById(userId: string): AppUser | null {
-  return users.find((u) => u.id === userId) ?? null
+export async function getUserById(userId: string): Promise<AppUser | null> {
+  const user = await prisma.user.findUnique({ where: { id: userId } })
+  return user ? mapUser(user) : null
 }
 
-export function updateUserProfile(userId: string, input: UpdateProfileInput): AppUser {
-  const user = users.find((u) => u.id === userId)
+export async function updateUserProfile(
+  userId: string,
+  input: UpdateProfileInput
+): Promise<AppUser> {
+  const user = await prisma.user.findUnique({ where: { id: userId } })
   if (!user) throw new Error('User not found')
+  const previousEmail = user.email
 
   if (input.email && input.email.toLowerCase() !== user.email.toLowerCase()) {
-    const existing = users.find((u) => u.email.toLowerCase() === input.email!.toLowerCase())
+    const existing = await prisma.user.findUnique({
+      where: { email: input.email.toLowerCase() },
+    })
     if (existing) throw new Error('Email already registered')
   }
 
-  if (input.email !== undefined) user.email = input.email
-  if (input.name !== undefined) user.name = input.name
-  if (input.address !== undefined) user.address = input.address
-  if (input.phone !== undefined) user.phone = input.phone
+  let normalizedUsername: string | undefined
+  if (input.username !== undefined) {
+    if (input.username.trim().toLowerCase() === 'ceo') {
+      throw new Error('Username "ceo" is reserved')
+    }
+    normalizedUsername = input.username.toLowerCase()
+    if (normalizedUsername !== user.username.toLowerCase()) {
+      const existing = await prisma.user.findUnique({ where: { username: normalizedUsername } })
+      if (existing) throw new Error('Username already registered')
+    }
+  }
 
-  return user
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      email: input.email !== undefined ? input.email.toLowerCase() : undefined,
+      username: normalizedUsername,
+      name: input.name,
+      address: input.address,
+      phone: input.phone,
+    },
+  })
+
+  // Keep document ownership aligned after email change.
+  if (input.email !== undefined && input.email.toLowerCase() !== previousEmail.toLowerCase()) {
+    await prisma.document.updateMany({
+      where: { ownerEmail: previousEmail },
+      data: { ownerEmail: input.email.toLowerCase() },
+    })
+  }
+
+  return mapUser(updated)
 }
 
-export function verifyUserPassword(userId: string, oldPassword: string): boolean {
-  const user = users.find((u) => u.id === userId)
+export async function verifyUserPassword(userId: string, oldPassword: string): Promise<boolean> {
+  const user = await prisma.user.findUnique({ where: { id: userId } })
   if (!user) return false
   return user.password === oldPassword
 }
 
-export function changeUserPassword(userId: string, oldPassword: string, newPassword: string): void {
-  const user = users.find((u) => u.id === userId)
+export async function changeUserPassword(
+  userId: string,
+  oldPassword: string,
+  newPassword: string
+): Promise<void> {
+  const user = await prisma.user.findUnique({ where: { id: userId } })
   if (!user) throw new Error('User not found')
   if (user.password !== oldPassword) throw new Error('invalid password')
-  user.password = newPassword
+  await prisma.user.update({
+    where: { id: userId },
+    data: { password: newPassword },
+  })
 
   if (user.role === 'CEO') {
     persistCeoPasswordToEnv(newPassword)
@@ -129,24 +229,25 @@ function persistCeoPasswordToEnv(newPassword: string): void {
   process.env.CEO_PASSWORD = newPassword
 }
 
-export function authenticate(email: string, password: string): AppUser | null {
-  return (
-    users.find((u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password) ??
-    null
-  )
+export async function authenticate(email: string, password: string): Promise<AppUser | null> {
+  const user = await prisma.user.findFirst({
+    where: { email: email.toLowerCase(), password },
+  })
+  return user ? mapUser(user) : null
 }
 
-export function createSession(userId: string): AppSession {
-  const session: AppSession = {
-    token: randomUUID(),
-    userId,
-  }
-  sessions.push(session)
-  return session
+export async function createSession(userId: string): Promise<{ token: string; userId: string }> {
+  const session = await prisma.session.create({
+    data: { userId, token: crypto.randomUUID() },
+  })
+  return { token: session.token, userId: session.userId }
 }
 
-export function getUserByToken(token: string): AppUser | null {
-  const session = sessions.find((s) => s.token === token)
+export async function getUserByToken(token: string): Promise<AppUser | null> {
+  const session = await prisma.session.findUnique({
+    where: { token },
+    include: { user: true },
+  })
   if (!session) return null
-  return users.find((u) => u.id === session.userId) ?? null
+  return mapUser(session.user)
 }

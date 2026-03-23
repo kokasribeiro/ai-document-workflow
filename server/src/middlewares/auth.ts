@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from 'express'
 import { getUserByToken } from '../auth/authStore'
 
-export function requireAuth(req: Request, res: Response, next: NextFunction): void {
+export async function requireAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
   const header = req.headers.authorization
   const token = header?.startsWith('Bearer ') ? header.slice(7) : ''
   if (!token) {
@@ -9,7 +9,7 @@ export function requireAuth(req: Request, res: Response, next: NextFunction): vo
     return
   }
 
-  const user = getUserByToken(token)
+  const user = await getUserByToken(token)
   if (!user) {
     res.status(401).json({ error: 'Invalid session' })
     return

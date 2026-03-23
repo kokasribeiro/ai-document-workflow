@@ -43,7 +43,34 @@
             placeholder="Phone"
           />
         </template>
+        <template v-else>
+          <input
+            v-model="form.email"
+            class="rounded-lg border border-slate-200 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+            type="email"
+            placeholder="Email"
+          />
+          <input
+            v-model="form.username"
+            class="rounded-lg border border-slate-200 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+            type="text"
+            placeholder="Username"
+          />
+          <input
+            v-model="form.address"
+            class="rounded-lg border border-slate-200 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+            type="text"
+            placeholder="Address"
+          />
+          <input
+            v-model="form.phone"
+            class="rounded-lg border border-slate-200 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+            type="text"
+            placeholder="Phone"
+          />
+        </template>
         <input
+          v-if="auth.user?.role === 'CEO'"
           v-model="form.name"
           class="rounded-lg border border-slate-200 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
           type="text"
@@ -138,6 +165,7 @@ const profile = reactive({
 
 const form = reactive({
   email: '',
+  username: '',
   name: '',
   address: '',
   phone: '',
@@ -150,6 +178,7 @@ const passwordForm = reactive({
 
 function syncFormFromProfile(): void {
   form.email = profile.email
+  form.username = profile.username
   form.name = profile.name
   form.address = profile.address
   form.phone = profile.phone
@@ -187,10 +216,11 @@ async function handleSave(): Promise<void> {
   message.value = ''
   try {
     const user = await auth.saveProfile({
-      email: auth.user?.role === 'CEO' ? form.email.trim() : undefined,
-      name: form.name.trim(),
-      address: auth.user?.role === 'CEO' ? form.address.trim() : undefined,
-      phone: auth.user?.role === 'CEO' ? form.phone.trim() : undefined,
+      email: form.email.trim(),
+      username: auth.user?.role === 'USER' ? form.username.trim() : undefined,
+      name: auth.user?.role === 'CEO' ? form.name.trim() : undefined,
+      address: form.address.trim(),
+      phone: form.phone.trim(),
     })
     profile.email = user.email
     profile.username = user.username

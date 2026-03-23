@@ -28,6 +28,7 @@ export async function register(input: {
 
 export async function updateProfile(input: {
   email?: string
+  username?: string
   name?: string
   address?: string
   phone?: string

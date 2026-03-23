@@ -30,6 +30,7 @@ const registerSchema = z
 
 const profileSchema = z.object({
   email: z.string().email().optional(),
+  username: z.string().min(3).optional(),
   name: z.string().optional(),
   address: z.string().optional(),
   phone: z.string().optional(),
@@ -54,7 +55,7 @@ function isAdult(birthDate: string): boolean {
   return age >= 18
 }
 
-export function register(req: Request, res: Response): void {
+export async function register(req: Request, res: Response): Promise<void> {
   const parsed = registerSchema.safeParse(req.body)
   if (!parsed.success) {
     res.status(400).json({ error: 'Invalid payload' })
@@ -65,13 +66,13 @@ export function register(req: Request, res: Response): void {
     return
   }
   try {
-    const user = createUser({
+    const user = await createUser({
       email: parsed.data.email,
       username: parsed.data.username,
       birthDate: parsed.data.birthDate,
       password: parsed.data.password,
     })
-    const session = createSession(user.id)
+    const session = await createSession(user.id)
     res.status(201).json({
       token: session.token,
       user: {
@@ -91,18 +92,18 @@ export function register(req: Request, res: Response): void {
   }
 }
 
-export function login(req: Request, res: Response): void {
+export async function login(req: Request, res: Response): Promise<void> {
   const parsed = loginSchema.safeParse(req.body)
   if (!parsed.success) {
     res.status(400).json({ error: 'Invalid payload' })
     return
   }
-  const user = authenticate(parsed.data.email, parsed.data.password)
+  const user = await authenticate(parsed.data.email, parsed.data.password)
   if (!user) {
     res.status(401).json({ error: 'Invalid email or password' })
     return
   }
-  const session = createSession(user.id)
+  const session = await createSession(user.id)
   res.json({
     token: session.token,
     user: {
@@ -118,12 +119,12 @@ export function login(req: Request, res: Response): void {
   })
 }
 
-export function me(req: Request, res: Response): void {
+export async function me(req: Request, res: Response): Promise<void> {
   if (!req.user?.id) {
     res.status(401).json({ error: 'Unauthorized' })
     return
   }
-  const user = getUserById(req.user.id)
+  const user = await getUserById(req.user.id)
   if (!user) {
     res.status(404).json({ error: 'User not found' })
     return
@@ -140,7 +141,7 @@ export function me(req: Request, res: Response): void {
   })
 }
 
-export function updateProfile(req: Request, res: Response): void {
+export async function updateProfile(req: Request, res: Response): Promise<void> {
   if (!req.user?.id) {
     res.status(401).json({ error: 'Unauthorized' })
     return
@@ -160,10 +161,13 @@ export function updateProfile(req: Request, res: Response): void {
             phone: parsed.data.phone,
           }
         : {
-            name: parsed.data.name,
+            email: parsed.data.email,
+            username: parsed.data.username,
+            address: parsed.data.address,
+            phone: parsed.data.phone,
           }
 
-    const user = updateUserProfile(req.user.id, updateData)
+    const user = await updateUserProfile(req.user.id, updateData)
     res.json({
       id: user.id,
       email: user.email,
@@ -180,7 +184,7 @@ export function updateProfile(req: Request, res: Response): void {
   }
 }
 
-export function verifyPassword(req: Request, res: Response): void {
+export async function verifyPassword(req: Request, res: Response): Promise<void> {
   if (!req.user?.id) {
     res.status(401).json({ error: 'Unauthorized' })
     return
@@ -190,7 +194,7 @@ export function verifyPassword(req: Request, res: Response): void {
     res.status(400).json({ error: 'Invalid payload' })
     return
   }
-  const isValid = verifyUserPassword(req.user.id, parsed.data.oldPassword)
+  const isValid = await verifyUserPassword(req.user.id, parsed.data.oldPassword)
   if (!isValid) {
     res.status(400).json({ error: 'invalid password' })
     return
@@ -198,7 +202,7 @@ export function verifyPassword(req: Request, res: Response): void {
   res.json({ ok: true })
 }
 
-export function changePassword(req: Request, res: Response): void {
+export async function changePassword(req: Request, res: Response): Promise<void> {
   if (!req.user?.id) {
     res.status(401).json({ error: 'Unauthorized' })
     return
@@ -209,15 +213,10 @@ export function changePassword(req: Request, res: Response): void {
     return
   }
   try {
-    changeUserPassword(req.user.id, parsed.data.oldPassword, parsed.data.newPassword)
+    await changeUserPassword(req.user.id, parsed.data.oldPassword, parsed.data.newPassword)
     res.json({ ok: true })
   } catch (e) {
-    const message =
-      e instanceof Error && e.message === 'Current password is incorrect'
-        ? 'invalid password'
-        : e instanceof Error
-          ? e.message
-          : 'Password change failed'
+    const message = e instanceof Error ? e.message : 'Password change failed'
     res.status(400).json({ error: message })
   }
 }

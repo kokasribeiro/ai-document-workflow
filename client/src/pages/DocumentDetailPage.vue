@@ -30,31 +30,25 @@
       </div>
 
       <div class="flex flex-wrap gap-3">
-        <select
-          v-model="nextStatus"
-          class="rounded-lg border border-slate-300 px-3 py-2 text-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-          :disabled="!canSetStatus(nextStatus)"
-        >
-          <option value="Draft">Draft</option>
-          <option value="Review">Review</option>
-          <option value="Approved">Approved</option>
-          <option value="Rejected">Rejected</option>
-        </select>
-        <button
-          type="button"
-          class="rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 font-medium text-white shadow transition hover:-translate-y-0.5 hover:from-indigo-500 hover:to-violet-500 disabled:cursor-not-allowed disabled:opacity-50"
-          :disabled="nextStatus === document.status || !canSetStatus(nextStatus)"
-          @click="handleStatusSave"
-        >
-          Save Changes
-        </button>
-        <p
-          v-if="!canSetStatus(nextStatus)"
-          class="self-center text-xs font-medium text-amber-700"
-        >
-          Only CEO can set Approved or Rejected.
-        </p>
-
+        <template v-if="auth.isCEO">
+          <select
+            v-model="nextStatus"
+            class="rounded-lg border border-slate-300 px-3 py-2 text-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+          >
+            <option value="Draft">Draft</option>
+            <option value="Review">Review</option>
+            <option value="Approved">Approved</option>
+            <option value="Rejected">Rejected</option>
+          </select>
+          <button
+            type="button"
+            class="rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 font-medium text-white shadow transition hover:-translate-y-0.5 hover:from-indigo-500 hover:to-violet-500 disabled:cursor-not-allowed disabled:opacity-50"
+            :disabled="nextStatus === document.status"
+            @click="handleStatusSave"
+          >
+            Save Changes
+          </button>
+        </template>
         <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 font-medium text-slate-700 transition hover:bg-slate-100" @click="toggleEdit">
           {{ isEditing ? 'Cancel Edit' : 'Edit' }}
         </button>
@@ -140,11 +134,6 @@ function toggleEdit(): void {
   if (isEditing.value && document.value) syncForm(document.value)
 }
 
-function canSetStatus(status: DocumentStatus): boolean {
-  if (status === 'Approved' || status === 'Rejected') return auth.isCEO
-  return true
-}
-
 async function handleSave(): Promise<void> {
   if (!document.value) return
   await store.editDocument(document.value.id, {
@@ -161,8 +150,13 @@ async function handleDelete(): Promise<void> {
   if (!document.value) return
   const confirmed = window.confirm('Delete this document?')
   if (!confirmed) return
-  await store.removeDocument(document.value.id)
-  await router.push('/documents')
+  try {
+    await store.removeDocument(document.value.id)
+    await router.push('/documents')
+  } catch (e) {
+    const message = e instanceof Error ? e.message : 'Failed to delete document'
+    window.alert(message)
+  }
 }
 
 async function handleStatusSave(): Promise<void> {

@@ -59,7 +59,13 @@ export const useAuthStore = defineStore('auth', {
       }
       return user
     },
-    async saveProfile(input: { email?: string; name?: string; address?: string; phone?: string }) {
+    async saveProfile(input: {
+      email?: string
+      username?: string
+      name?: string
+      address?: string
+      phone?: string
+    }) {
       const user = await updateProfile(input)
       if (this.token) {
         this.setSession(this.token, user)

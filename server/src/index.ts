@@ -5,6 +5,7 @@ import documentRoutes from './routes/documentRoutes'
 import aiRoutes from './routes/aiRoutes'
 import authRoutes from './routes/authRoutes'
 import { requireAuth } from './middlewares/auth'
+import { ensureSeedCeo } from './auth/authStore'
 
 dotenv.config()
 
@@ -22,6 +23,11 @@ app.use('/auth', authRoutes)
 app.use('/documents', documentRoutes)
 app.use('/ai', requireAuth, aiRoutes)
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`)
-})
+async function start(): Promise<void> {
+  await ensureSeedCeo()
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`)
+  })
+}
+
+void start()
