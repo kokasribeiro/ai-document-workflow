@@ -39,7 +39,8 @@
 
       <button
         type="button"
-        class="rounded-lg border border-slate-300 px-4 py-2 font-medium text-slate-700 transition hover:bg-slate-100"
+        class="rounded-lg border border-slate-300 px-4 py-2 font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+        :disabled="aiLoading"
         @click="handleAiSummary"
       >
         Generate AI Summary
@@ -47,14 +48,18 @@
 
       <button
         type="button"
-        class="rounded-lg border border-slate-300 px-4 py-2 font-medium text-slate-700 transition hover:bg-slate-100"
+        class="rounded-lg border border-slate-300 px-4 py-2 font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+        :disabled="aiLoading"
         @click="handleAiCategory"
       >
         Suggest Category
       </button>
     </div>
 
-    <p v-if="aiLoading" class="text-sm text-slate-500">AI is processing...</p>
+    <div v-if="aiLoading" class="flex items-center gap-2 text-sm text-slate-500">
+      <span class="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-indigo-600" />
+      <span>AI is processing...</span>
+    </div>
     <p v-if="aiError" class="text-sm text-rose-600">{{ aiError }}</p>
     <p v-if="submitError" class="text-sm text-rose-600">{{ submitError }}</p>
 
@@ -140,10 +145,53 @@ async function extractPdfText(file: File): Promise<string> {
   for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
     const page = await pdf.getPage(pageNumber)
     const textContent = await page.getTextContent()
-    const pageText = textContent.items
-      .map((item) => ('str' in item ? item.str : ''))
-      .join(' ')
-      .trim()
+    const textItems = textContent.items
+      .map((item) => item as { str?: string; transform?: number[] })
+      .filter((item) => typeof item.str === 'string' && Array.isArray(item.transform)) as Array<{
+      str: string
+      transform: number[]
+    }>
+
+    // Rebuild line order by Y coordinate and then by X coordinate.
+    const rows = new Map<number, Array<{ x: number; text: string }>>()
+    for (const item of textItems) {
+      const transform = item.transform
+      if (!transform || transform.length < 6) continue
+      const yRaw = transform[5]
+      const xRaw = transform[4]
+      if (typeof yRaw !== 'number' || typeof xRaw !== 'number') continue
+      const y = Math.round(yRaw * 10) / 10
+      const x = xRaw
+      const bucket = rows.get(y) ?? []
+      bucket.push({ x, text: item.str })
+      rows.set(y, bucket)
+    }
+
+    const sortedY = [...rows.keys()].sort((a, b) => b - a)
+    const lines = sortedY.map((y) => {
+      const parts = (rows.get(y) ?? []).sort((a, b) => a.x - b.x)
+      return parts
+        .map((p) => p.text.trim())
+        .filter(Boolean)
+        .join(' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+    })
+
+    const cleanLines = lines.filter((line) => {
+      if (!line) return false
+      const hasLetters = /[A-Za-zÀ-ÿ]/.test(line)
+      if (!hasLetters) return false
+      const symbolDensity = (line.match(/[$_=|{}[\]<>]/g)?.length ?? 0) / line.length
+      if (symbolDensity > 0.15) return false
+      const longTokenNoise = line
+        .split(/\s+/)
+        .some((token) => token.length > 25 && !/[aeiouà-ÿ]/i.test(token))
+      if (longTokenNoise) return false
+      return true
+    })
+
+    const pageText = cleanLines.join('\n').trim()
     if (pageText) pages.push(pageText)
   }
 
