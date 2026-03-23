@@ -10,8 +10,11 @@ import {
   validateCreateDocument,
   validateUpdateDocument,
 } from '../middlewares/documentValidation'
+import { requireAuth } from '../middlewares/auth'
 
 const router = Router()
+
+router.use(requireAuth)
 
 router.get('/', getDocuments)
 router.get('/:id', getDocumentById)

@@ -74,6 +74,10 @@ export async function updateDocument(req: Request, res: Response) {
       return res.status(404).json({ error: 'Document not found' })
     }
 
+    if ((status === 'Approved' || status === 'Rejected') && req.user?.role !== 'CEO') {
+      return res.status(403).json({ error: 'Only CEO can set Approved or Rejected' })
+    }
+
     const updated = await prisma.document.update({
       where: { id },
       data: {
