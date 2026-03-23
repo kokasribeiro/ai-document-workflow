@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { login, register, updateProfile } from '../services/authService'
+import { getMe, login, register, updateProfile } from '../services/authService'
 
 export type UserRole = 'CEO' | 'USER'
 
@@ -52,11 +52,19 @@ export const useAuthStore = defineStore('auth', {
       const data = await register(input)
       this.setSession(data.token, data.user)
     },
-    async saveProfile(input: { username?: string; name?: string; address?: string; phone?: string }) {
+    async refreshProfile() {
+      const user = await getMe()
+      if (this.token) {
+        this.setSession(this.token, user)
+      }
+      return user
+    },
+    async saveProfile(input: { email?: string; name?: string; address?: string; phone?: string }) {
       const user = await updateProfile(input)
       if (this.token) {
         this.setSession(this.token, user)
       }
+      return user
     },
   },
 })

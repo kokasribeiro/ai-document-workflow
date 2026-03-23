@@ -13,7 +13,7 @@
           v-if="auth.user"
           class="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700"
         >
-          {{ auth.user.email }} ({{ auth.user.role }})
+          {{ auth.user.username || auth.user.email }} ({{ auth.user.role }})
         </span>
         <button
           class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100"

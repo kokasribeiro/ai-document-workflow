@@ -27,7 +27,7 @@ export async function register(input: {
 }
 
 export async function updateProfile(input: {
-  username?: string
+  email?: string
   name?: string
   address?: string
   phone?: string
@@ -35,5 +35,23 @@ export async function updateProfile(input: {
   return apiRequest<AuthUser>('/auth/profile', {
     method: 'PUT',
     body: JSON.stringify(input),
+  })
+}
+
+export async function getMe(): Promise<AuthUser> {
+  return apiRequest<AuthUser>('/auth/me')
+}
+
+export async function verifyCurrentPassword(oldPassword: string): Promise<void> {
+  await apiRequest<{ ok: boolean }>('/auth/verify-password', {
+    method: 'POST',
+    body: JSON.stringify({ oldPassword }),
+  })
+}
+
+export async function changePassword(oldPassword: string, newPassword: string): Promise<void> {
+  await apiRequest<{ ok: boolean }>('/auth/change-password', {
+    method: 'PUT',
+    body: JSON.stringify({ oldPassword, newPassword }),
   })
 }

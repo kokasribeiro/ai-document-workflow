@@ -1,4 +1,7 @@
 import { randomUUID } from 'crypto'
+import dotenv from 'dotenv'
+
+dotenv.config()
 
 export type UserRole = 'CEO' | 'USER'
 
@@ -22,13 +25,13 @@ export interface AppSession {
 const users: AppUser[] = [
   {
     id: randomUUID(),
-    email: 'ceo@gmail.com',
-    username: 'ceo',
-    birthDate: '1990-01-01',
-    name: 'Chief Executive Officer',
+    email: process.env.CEO_EMAIL ?? 'ceo@gmail.com',
+    username: process.env.CEO_USERNAME ?? 'ceo',
+    birthDate: process.env.CEO_BIRTHDATE ?? '1990-01-01',
+    name: process.env.CEO_NAME ?? 'Chief Executive Officer',
     address: '',
     phone: '',
-    password: 'test123',
+    password: process.env.CEO_PASSWORD ?? 'test123',
     role: 'CEO',
   },
 ]
@@ -43,13 +46,16 @@ export interface CreateUserInput {
 }
 
 export interface UpdateProfileInput {
-  username?: string
+  email?: string
   name?: string
   address?: string
   phone?: string
 }
 
 export function createUser(input: CreateUserInput): AppUser {
+  if (input.username.trim().toLowerCase() === 'ceo') {
+    throw new Error('Username "ceo" is reserved')
+  }
   const existingEmail = users.find((u) => u.email.toLowerCase() === input.email.toLowerCase())
   if (existingEmail) throw new Error('Email already registered')
   const existingUsername = users.find((u) => u.username.toLowerCase() === input.username.toLowerCase())
@@ -77,17 +83,30 @@ export function updateUserProfile(userId: string, input: UpdateProfileInput): Ap
   const user = users.find((u) => u.id === userId)
   if (!user) throw new Error('User not found')
 
-  if (input.username && input.username.toLowerCase() !== user.username.toLowerCase()) {
-    const existing = users.find((u) => u.username.toLowerCase() === input.username!.toLowerCase())
-    if (existing) throw new Error('Username already registered')
+  if (input.email && input.email.toLowerCase() !== user.email.toLowerCase()) {
+    const existing = users.find((u) => u.email.toLowerCase() === input.email!.toLowerCase())
+    if (existing) throw new Error('Email already registered')
   }
 
-  if (input.username !== undefined) user.username = input.username
+  if (input.email !== undefined) user.email = input.email
   if (input.name !== undefined) user.name = input.name
   if (input.address !== undefined) user.address = input.address
   if (input.phone !== undefined) user.phone = input.phone
 
   return user
+}
+
+export function verifyUserPassword(userId: string, oldPassword: string): boolean {
+  const user = users.find((u) => u.id === userId)
+  if (!user) return false
+  return user.password === oldPassword
+}
+
+export function changeUserPassword(userId: string, oldPassword: string, newPassword: string): void {
+  const user = users.find((u) => u.id === userId)
+  if (!user) throw new Error('User not found')
+  if (user.password !== oldPassword) throw new Error('invalid password')
+  user.password = newPassword
 }
 
 export function authenticate(email: string, password: string): AppUser | null {

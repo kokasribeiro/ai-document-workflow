@@ -1,4 +1,4 @@
-export const API_BASE_URL = 'http://localhost:3001'
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'
 
 function getToken(): string {
   return localStorage.getItem('auth_token') ?? ''
@@ -19,7 +19,14 @@ export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T
   })
 
   const fallback = `Request failed: ${response.status}`
+  const isPublicAuthRoute = path === '/auth/login' || path === '/auth/register'
   if (!response.ok) {
+    if (response.status === 401 && token && !isPublicAuthRoute) {
+      localStorage.removeItem('auth_token')
+      localStorage.removeItem('auth_user')
+      window.location.href = '/auth'
+      throw new Error('Session expired. Please sign in again.')
+    }
     try {
       const data = (await response.json()) as { error?: string }
       throw new Error(data.error || fallback)

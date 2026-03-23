@@ -19,6 +19,12 @@
       >
         New Document
       </RouterLink>
+      <RouterLink
+        class="block rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:-translate-y-0.5 hover:bg-indigo-50 hover:text-indigo-700"
+        to="/profile"
+      >
+        My Profile
+      </RouterLink>
     </nav>
   </aside>
 </template>

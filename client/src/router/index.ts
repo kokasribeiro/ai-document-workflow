@@ -4,6 +4,7 @@ import DocumentsPage from '../pages/DocumentsPage.vue'
 import NewDocumentPage from '../pages/NewDocumentPage.vue'
 import DocumentDetailPage from '../pages/DocumentDetailPage.vue'
 import AuthPage from '../pages/AuthPage.vue'
+import ProfilePage from '../pages/ProfilePage.vue'
 import { useAuthStore } from '../stores/authStore'
 
 const router = createRouter({
@@ -14,6 +15,7 @@ const router = createRouter({
     { path: '/documents', name: 'documents', component: DocumentsPage },
     { path: '/documents/new', name: 'new-document', component: NewDocumentPage },
     { path: '/documents/:id', name: 'document-detail', component: DocumentDetailPage },
+    { path: '/profile', name: 'profile', component: ProfilePage },
   ],
 })
 

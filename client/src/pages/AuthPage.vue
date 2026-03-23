@@ -29,15 +29,32 @@
           placeholder="Email"
         />
         <input
+          v-if="mode === 'register'"
+          v-model="username"
+          class="w-full rounded-lg border border-slate-200 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+          type="text"
+          placeholder="Username"
+        />
+        <input
+          v-if="mode === 'register'"
+          v-model="birthDate"
+          class="w-full rounded-lg border border-slate-200 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+          type="date"
+          placeholder="Date of birth"
+        />
+        <input
           v-model="password"
           class="w-full rounded-lg border border-slate-200 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
           type="password"
           placeholder="Password"
         />
-
-        <p class="text-xs text-slate-500">
-          CEO account: <span class="font-medium">ceo@gmail.com</span> / <span class="font-medium">test123</span>
-        </p>
+        <input
+          v-if="mode === 'register'"
+          v-model="confirmPassword"
+          class="w-full rounded-lg border border-slate-200 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+          type="password"
+          placeholder="Repeat password"
+        />
         <p v-if="error" class="text-sm text-rose-600">{{ error }}</p>
 
         <button
@@ -61,7 +78,10 @@ const auth = useAuthStore()
 
 const mode = ref<'signin' | 'register'>('signin')
 const email = ref('')
+const username = ref('')
+const birthDate = ref('')
 const password = ref('')
+const confirmPassword = ref('')
 const error = ref('')
 
 async function handleSubmit(): Promise<void> {
@@ -70,7 +90,24 @@ async function handleSubmit(): Promise<void> {
     if (mode.value === 'signin') {
       await auth.signIn(email.value, password.value)
     } else {
-      await auth.signUp(email.value, password.value)
+      const now = new Date()
+      const birth = new Date(birthDate.value)
+      let age = now.getFullYear() - birth.getFullYear()
+      const monthDiff = now.getMonth() - birth.getMonth()
+      if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < birth.getDate())) age--
+      if (!birthDate.value || Number.isNaN(birth.getTime()) || age < 18) {
+        throw new Error('You must be at least 18 years old')
+      }
+      if (password.value !== confirmPassword.value) {
+        throw new Error('Passwords do not match')
+      }
+      await auth.signUp({
+        email: email.value,
+        username: username.value,
+        birthDate: birthDate.value,
+        password: password.value,
+        confirmPassword: confirmPassword.value,
+      })
     }
     await router.push('/')
   } catch (e) {
