@@ -1,5 +1,7 @@
 import { randomUUID } from 'crypto'
 import dotenv from 'dotenv'
+import { readFileSync, writeFileSync } from 'fs'
+import path from 'path'
 
 dotenv.config()
 
@@ -107,6 +109,24 @@ export function changeUserPassword(userId: string, oldPassword: string, newPassw
   if (!user) throw new Error('User not found')
   if (user.password !== oldPassword) throw new Error('invalid password')
   user.password = newPassword
+
+  if (user.role === 'CEO') {
+    persistCeoPasswordToEnv(newPassword)
+  }
+}
+
+function persistCeoPasswordToEnv(newPassword: string): void {
+  const envPath = path.resolve(process.cwd(), '.env')
+  const envContent = readFileSync(envPath, 'utf8')
+  const escaped = newPassword.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+  const line = `CEO_PASSWORD="${escaped}"`
+  const hasKey = /^CEO_PASSWORD=.*$/m.test(envContent)
+  const updated = hasKey
+    ? envContent.replace(/^CEO_PASSWORD=.*$/m, line)
+    : `${envContent.trimEnd()}\n${line}\n`
+
+  writeFileSync(envPath, updated, 'utf8')
+  process.env.CEO_PASSWORD = newPassword
 }
 
 export function authenticate(email: string, password: string): AppUser | null {

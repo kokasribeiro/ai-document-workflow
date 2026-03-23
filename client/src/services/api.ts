@@ -21,18 +21,22 @@ export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T
   const fallback = `Request failed: ${response.status}`
   const isPublicAuthRoute = path === '/auth/login' || path === '/auth/register'
   if (!response.ok) {
-    if (response.status === 401 && token && !isPublicAuthRoute) {
+    if (response.status === 401 && !isPublicAuthRoute) {
       localStorage.removeItem('auth_token')
       localStorage.removeItem('auth_user')
       window.location.href = '/auth'
       throw new Error('Session expired. Please sign in again.')
     }
+    let message = fallback
     try {
       const data = (await response.json()) as { error?: string }
-      throw new Error(data.error || fallback)
+      if (typeof data.error === 'string' && data.error.trim()) {
+        message = data.error
+      }
     } catch {
-      throw new Error(fallback)
+      // Keep fallback when response has no JSON body
     }
+    throw new Error(message)
   }
 
   if (response.status === 204) return undefined as T
