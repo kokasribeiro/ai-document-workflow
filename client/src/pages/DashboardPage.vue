@@ -1,29 +1,45 @@
-<script setup lang="ts">
-import { onMounted } from 'vue'
-import { storeToRefs } from 'pinia'
-import AppHeader from '../components/layout/AppHeader.vue'
-import AppSidebar from '../components/layout/AppSidebar.vue'
-import DocumentList from '../components/documents/DocumentList.vue'
-import { useDocumentStore } from '../stores/documentStore'
+<template>
+  <section>
+    <h2 class="mb-6 text-2xl font-semibold">Dashboard</h2>
 
-const documentStore = useDocumentStore()
-const { filteredDocuments, loading } = storeToRefs(documentStore)
+    <div class="grid gap-4 md:grid-cols-4">
+      <div class="rounded-xl bg-white p-4 shadow">
+        <p class="text-sm text-slate-500">Draft</p>
+        <p class="text-2xl font-bold">{{ draftCount }}</p>
+      </div>
+      <div class="rounded-xl bg-white p-4 shadow">
+        <p class="text-sm text-slate-500">Review</p>
+        <p class="text-2xl font-bold">{{ reviewCount }}</p>
+      </div>
+      <div class="rounded-xl bg-white p-4 shadow">
+        <p class="text-sm text-slate-500">Approved</p>
+        <p class="text-2xl font-bold">{{ approvedCount }}</p>
+      </div>
+      <div class="rounded-xl bg-white p-4 shadow">
+        <p class="text-sm text-slate-500">Rejected</p>
+        <p class="text-2xl font-bold">{{ rejectedCount }}</p>
+      </div>
+    </div>
+
+    <div class="mt-6">
+      <AiSummaryPanel />
+    </div>
+  </section>
+</template>
+
+<script setup lang="ts">
+import { computed, onMounted } from 'vue'
+import { useDocumentStore } from '../stores/documentStore'
+import AiSummaryPanel from '../components/ai/AiSummaryPanel.vue'
+
+const store = useDocumentStore()
 
 onMounted(() => {
-  void documentStore.fetchDocuments()
+  store.fetchDocuments()
 })
-</script>
 
-<template>
-  <div>
-    <AppHeader />
-    <div class="flex min-h-[calc(100vh-64px)]">
-      <AppSidebar />
-      <main class="flex-1 p-6">
-        <h2 class="mb-4 text-lg font-semibold">Dashboard</h2>
-        <p v-if="loading">Loading documents...</p>
-        <DocumentList v-else :documents="filteredDocuments" />
-      </main>
-    </div>
-  </div>
-</template>
+const draftCount = computed(() => store.items.filter((d) => d.status === 'Draft').length)
+const reviewCount = computed(() => store.items.filter((d) => d.status === 'Review').length)
+const approvedCount = computed(() => store.items.filter((d) => d.status === 'Approved').length)
+const rejectedCount = computed(() => store.items.filter((d) => d.status === 'Rejected').length)
+</script>
