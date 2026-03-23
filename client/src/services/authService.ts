@@ -13,9 +13,27 @@ export async function login(email: string, password: string): Promise<AuthRespon
   })
 }
 
-export async function register(email: string, password: string): Promise<AuthResponse> {
+export async function register(input: {
+  email: string
+  username: string
+  birthDate: string
+  password: string
+  confirmPassword: string
+}): Promise<AuthResponse> {
   return apiRequest<AuthResponse>('/auth/register', {
     method: 'POST',
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify(input),
+  })
+}
+
+export async function updateProfile(input: {
+  username?: string
+  name?: string
+  address?: string
+  phone?: string
+}): Promise<AuthUser> {
+  return apiRequest<AuthUser>('/auth/profile', {
+    method: 'PUT',
+    body: JSON.stringify(input),
   })
 }
