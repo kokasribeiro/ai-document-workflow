@@ -1,38 +1,46 @@
-import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
-import type { DocumentFilters, DocumentItem } from '../types/document'
-import { getDocuments } from '../services/documentService'
+import { createDocument, getDocuments } from '../services/documentService'
+import type { DocumentItem, DocumentStatus } from '../types/document'
 
-export const useDocumentStore = defineStore('document', () => {
-  const documents = ref<DocumentItem[]>([])
-  const loading = ref(false)
-  const filters = ref<DocumentFilters>({
-    query: '',
-    status: 'all',
-    category: 'all',
-  })
+type CreatePayload = Omit<DocumentItem, 'id'>
 
-  const filteredDocuments = computed(() =>
-    documents.value.filter((document) => {
-      const queryOk =
-        !filters.value.query ||
-        document.title.toLowerCase().includes(filters.value.query.toLowerCase())
-      const statusOk =
-        filters.value.status === 'all' || document.status === filters.value.status
-      const categoryOk =
-        filters.value.category === 'all' || document.category === filters.value.category
-      return queryOk && statusOk && categoryOk
-    }),
-  )
+export const useDocumentStore = defineStore('documents', {
+  state: () => ({
+    items: [] as DocumentItem[],
+    loading: false,
+    error: '',
+    search: '',
+    statusFilter: '' as '' | DocumentStatus,
+    categoryFilter: '',
+  }),
 
-  async function fetchDocuments(): Promise<void> {
-    loading.value = true
-    try {
-      documents.value = await getDocuments()
-    } finally {
-      loading.value = false
-    }
-  }
+  getters: {
+    filteredDocuments(state) {
+      return state.items.filter((doc) => {
+        const matchesSearch = doc.title.toLowerCase().includes(state.search.toLowerCase())
+        const matchesStatus = state.statusFilter ? doc.status === state.statusFilter : true
+        const matchesCategory = state.categoryFilter ? doc.category === state.categoryFilter : true
+        return matchesSearch && matchesStatus && matchesCategory
+      })
+    },
+  },
 
-  return { documents, filteredDocuments, filters, loading, fetchDocuments }
+  actions: {
+    async fetchDocuments() {
+      this.loading = true
+      this.error = ''
+      try {
+        this.items = await getDocuments()
+      } catch {
+        this.error = 'Could not load documents'
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async addDocument(payload: CreatePayload) {
+      const created = await createDocument(payload)
+      this.items.unshift(created)
+    },
+  },
 })

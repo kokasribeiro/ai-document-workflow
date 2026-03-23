@@ -1,16 +1,13 @@
-export type DocumentStatus = 'draft' | 'processing' | 'completed' | 'error'
+export type DocumentStatus = 'Draft' | 'Review' | 'Approved' | 'Rejected'
 
 export interface DocumentItem {
   id: string
   title: string
+  description: string
   category: string
   status: DocumentStatus
   createdAt: string
-  summary?: string
-}
-
-export interface DocumentFilters {
-  query: string
-  status: DocumentStatus | 'all'
-  category: string | 'all'
+  updatedAt: string
+  aiSummary?: string
+  aiSuggestedCategory?: string
 }

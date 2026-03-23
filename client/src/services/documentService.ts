@@ -1,39 +1,27 @@
+import { API_BASE_URL } from './api'
 import type { DocumentItem } from '../types/document'
 
-const mockDocuments: DocumentItem[] = [
-  {
-    id: 'doc-1',
-    title: 'Invoice March',
-    category: 'finance',
-    status: 'completed',
-    createdAt: new Date().toISOString(),
-    summary: 'Monthly invoice with totals.',
-  },
-  {
-    id: 'doc-2',
-    title: 'Employment Contract',
-    category: 'legal',
-    status: 'processing',
-    createdAt: new Date().toISOString(),
-  },
-]
-
 export async function getDocuments(): Promise<DocumentItem[]> {
-  return Promise.resolve(mockDocuments)
+  const response = await fetch(`${API_BASE_URL}/documents`)
+  if (!response.ok) throw new Error('Failed to fetch documents')
+  return response.json()
 }
 
-export async function getDocumentById(id: string): Promise<DocumentItem | undefined> {
-  return Promise.resolve(mockDocuments.find((doc) => doc.id === id))
+export async function getDocumentById(id: string): Promise<DocumentItem> {
+  const response = await fetch(`${API_BASE_URL}/documents/${id}`)
+  if (!response.ok) throw new Error('Failed to fetch document')
+  return response.json()
 }
 
-export async function createDocument(input: Pick<DocumentItem, 'title' | 'category'>): Promise<DocumentItem> {
-  const nextDocument: DocumentItem = {
-    id: `doc-${Date.now()}`,
-    title: input.title,
-    category: input.category,
-    status: 'draft',
-    createdAt: new Date().toISOString(),
-  }
-  mockDocuments.unshift(nextDocument)
-  return Promise.resolve(nextDocument)
+export async function createDocument(
+  payload: Omit<DocumentItem, 'id'>
+): Promise<DocumentItem> {
+  const response = await fetch(`${API_BASE_URL}/documents`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+
+  if (!response.ok) throw new Error('Failed to create document')
+  return response.json()
 }
