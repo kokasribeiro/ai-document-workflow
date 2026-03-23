@@ -31,13 +31,20 @@
         <select
           v-model="nextStatus"
           class="rounded-lg border border-slate-300 px-3 py-2 text-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-          @change="handleStatusChange"
         >
           <option value="Draft">Draft</option>
           <option value="Review">Review</option>
           <option value="Approved">Approved</option>
           <option value="Rejected">Rejected</option>
         </select>
+        <button
+          type="button"
+          class="rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 font-medium text-white shadow transition hover:-translate-y-0.5 hover:from-indigo-500 hover:to-violet-500 disabled:cursor-not-allowed disabled:opacity-50"
+          :disabled="nextStatus === document.status"
+          @click="handleStatusSave"
+        >
+          Save Changes
+        </button>
 
         <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 font-medium text-slate-700 transition hover:bg-slate-100" @click="toggleEdit">
           {{ isEditing ? 'Cancel Edit' : 'Edit' }}
@@ -140,8 +147,9 @@ async function handleDelete(): Promise<void> {
   await router.push('/documents')
 }
 
-async function handleStatusChange(): Promise<void> {
+async function handleStatusSave(): Promise<void> {
   if (!document.value) return
+  if (nextStatus.value === document.value.status) return
   await store.editDocument(document.value.id, {
     status: nextStatus.value,
     updatedAt: new Date().toISOString(),

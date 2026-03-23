@@ -44,6 +44,7 @@
 
     <p v-if="aiLoading" class="text-sm text-slate-500">AI is processing...</p>
     <p v-if="aiError" class="text-sm text-rose-600">{{ aiError }}</p>
+    <p v-if="submitError" class="text-sm text-rose-600">{{ submitError }}</p>
 
     <div v-if="aiSummary" class="rounded-xl border border-indigo-100 bg-indigo-50/70 p-4">
       <p class="text-xs font-semibold text-slate-500">AI Summary</p>
@@ -67,14 +68,15 @@ const category = ref('Invoice')
 const aiSummary = ref('')
 const aiLoading = ref(false)
 const aiError = ref('')
+const submitError = ref('')
 
 async function handleAiSummary() {
   aiLoading.value = true
   aiError.value = ''
   try {
     aiSummary.value = await summarizeDocument(description.value)
-  } catch {
-    aiError.value = 'Failed to generate summary'
+  } catch (error) {
+    aiError.value = error instanceof Error ? error.message : 'Failed to generate summary'
   } finally {
     aiLoading.value = false
   }
@@ -85,25 +87,29 @@ async function handleAiCategory() {
   aiError.value = ''
   try {
     category.value = await suggestCategory(description.value)
-  } catch {
-    aiError.value = 'Failed to suggest category'
+  } catch (error) {
+    aiError.value = error instanceof Error ? error.message : 'Failed to suggest category'
   } finally {
     aiLoading.value = false
   }
 }
 
 async function handleSubmit() {
-  await store.addDocument({
-    title: title.value,
-    description: description.value,
-    category: category.value,
-    status: 'Draft',
-    createdAt: new Date().toISOString().slice(0, 10),
-    updatedAt: new Date().toISOString().slice(0, 10),
-    aiSummary: aiSummary.value,
-    aiSuggestedCategory: category.value,
-  })
-
-  router.push('/documents')
+  submitError.value = ''
+  try {
+    await store.addDocument({
+      title: title.value,
+      description: description.value,
+      category: category.value,
+      status: 'Draft',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      aiSummary: aiSummary.value,
+      aiSuggestedCategory: category.value,
+    })
+    router.push('/documents')
+  } catch (error) {
+    submitError.value = error instanceof Error ? error.message : 'Failed to save document'
+  }
 }
 </script>

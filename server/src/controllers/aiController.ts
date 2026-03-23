@@ -2,6 +2,8 @@ import type { Request, Response } from 'express'
 
 const OLLAMA_URL = process.env.OLLAMA_URL ?? 'http://localhost:11434'
 const OLLAMA_MODEL = process.env.OLLAMA_MODEL ?? 'llama3.2:1b'
+const ENTERPRISE_BASE_PROMPT =
+  'You are a professional enterprise document assistant inside a business workflow application. Be concise, reliable, and consistent. Use only the user-provided content. Never invent facts. Write in clear, simple business English. Keep responses short, structured, and professional. Do not use casual language or unnecessary text.'
 
 async function ollamaChat(system: string, user: string): Promise<string> {
   const response = await fetch(`${OLLAMA_URL}/api/chat`, {
@@ -30,7 +32,7 @@ export async function summarizeDocument(req: Request, res: Response): Promise<vo
       return
     }
     const summary = await ollamaChat(
-      'You summarize enterprise documents in 2 short business sentences.',
+      `${ENTERPRISE_BASE_PROMPT} For summaries: explain the main purpose of the document with an appropriate length based on the content. Mention important obligations, dates, costs, or risks when present. If the text is too short, vague, or unclear, explicitly say there is not enough information.`,
       text
     )
     res.json({ summary })
@@ -47,7 +49,7 @@ export async function suggestCategory(req: Request, res: Response): Promise<void
       return
     }
     const category = await ollamaChat(
-      'Classify the document into exactly one of these categories: Invoice, Contract, Report, HR. Return only the category name.',
+      `${ENTERPRISE_BASE_PROMPT} Classify the document into exactly one category from this list only: Invoice, Contract, Report, HR. Return only the category name. Do not explain.`,
       text
     )
     res.json({ category })
