@@ -1,54 +1,19 @@
-# client
+# Frontend (`client/`)
 
-This template should help get you started developing with Vue 3 in Vite.
+Vue 3 + Vite + TypeScript SPA for the AI Document Workflow app.
 
-## Recommended IDE Setup
+See the repository root **[README.md](../README.md)** for purpose, features, stack, and how to run the full project.
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## Scripts
 
-## Recommended Browser Setup
+| Command        | Description              |
+| -------------- | ------------------------ |
+| `npm run dev`  | Dev server (Vite)        |
+| `npm run build` | Production build        |
+| `npm run type-check` | `vue-tsc`           |
+| `npm run lint` | ESLint + Oxlint          |
+| `npm run test:unit` | Vitest              |
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+## Configuration
 
-## Type Support for `.vue` Imports in TS
-
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Type-Check, Compile and Minify for Production
-
-```sh
-npm run build
-```
-
-### Run Unit Tests with [Vitest](https://vitest.dev/)
-
-```sh
-npm run test:unit
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
+- API base URL: `VITE_API_BASE_URL` (defaults to `http://localhost:3001` — see `src/services/api.ts`).

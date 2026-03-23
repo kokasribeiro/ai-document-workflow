@@ -1,45 +1,54 @@
-import { Request, Response } from 'express'
+import type { Request, Response } from 'express'
+import type { Document } from '@prisma/client'
 import { prisma } from '../lib/prisma'
+import { canUserAccessDocument } from '../utils/documentAccess'
+import { paramId } from '../utils/params'
 
-export async function getDocuments(req: Request, res: Response) {
+async function findAccessibleDocument(
+  req: Request,
+  res: Response,
+  id: string
+): Promise<Document | null> {
+  const document = await prisma.document.findUnique({ where: { id } })
+
+  if (!document) {
+    res.status(404).json({ error: 'Document not found' })
+    return null
+  }
+
+  if (!canUserAccessDocument(req.user, document)) {
+    res.status(404).json({ error: 'Document not found' })
+    return null
+  }
+
+  return document
+}
+
+export async function getDocuments(req: Request, res: Response): Promise<void> {
   try {
     const isCEO = req.user?.role === 'CEO'
     const documents = await prisma.document.findMany({
       where: isCEO ? undefined : { ownerEmail: req.user?.email },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy: { createdAt: 'desc' },
     })
-
     res.json(documents)
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Failed to fetch documents' })
   }
 }
 
-export async function getDocumentById(req: Request, res: Response) {
+export async function getDocumentById(req: Request, res: Response): Promise<void> {
   try {
-    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id
-
-    const document = await prisma.document.findUnique({
-      where: { id },
-    })
-
-    if (!document) {
-      return res.status(404).json({ error: 'Document not found' })
-    }
-
-    if (req.user?.role !== 'CEO' && document.ownerEmail !== req.user?.email) {
-      return res.status(404).json({ error: 'Document not found' })
-    }
-
-    return res.json(document)
-  } catch (error) {
-    return res.status(500).json({ error: 'Failed to fetch document' })
+    const id = paramId(req)
+    const document = await findAccessibleDocument(req, res, id)
+    if (!document) return
+    res.json(document)
+  } catch {
+    res.status(500).json({ error: 'Failed to fetch document' })
   }
 }
 
-export async function createDocument(req: Request, res: Response) {
+export async function createDocument(req: Request, res: Response): Promise<void> {
   try {
     const { title, description, category, status, aiSummary, aiSuggestedCategory } = req.body
 
@@ -54,81 +63,44 @@ export async function createDocument(req: Request, res: Response) {
         aiSuggestedCategory,
       },
     })
-
-    return res.status(201).json(document)
-  } catch (error) {
-    return res.status(500).json({ error: 'Failed to create document' })
+    res.status(201).json(document)
+  } catch {
+    res.status(500).json({ error: 'Failed to create document' })
   }
 }
 
-export async function updateDocument(req: Request, res: Response) {
+export async function updateDocument(req: Request, res: Response): Promise<void> {
   try {
-    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id
-    const {
-      title,
-      description,
-      category,
-      status,
-      aiSummary,
-      aiSuggestedCategory,
-    } = req.body
+    const id = paramId(req)
+    const existing = await findAccessibleDocument(req, res, id)
+    if (!existing) return
 
-    const existing = await prisma.document.findUnique({
-      where: { id },
-    })
-
-    if (!existing) {
-      return res.status(404).json({ error: 'Document not found' })
-    }
-
-    if (req.user?.role !== 'CEO' && existing.ownerEmail !== req.user?.email) {
-      return res.status(404).json({ error: 'Document not found' })
-    }
+    const { title, description, category, status, aiSummary, aiSuggestedCategory } = req.body
 
     if (status !== undefined && req.user?.role !== 'CEO') {
-      return res.status(403).json({ error: 'Only CEO can change document status' })
+      res.status(403).json({ error: 'Only CEO can change document status' })
+      return
     }
 
     const updated = await prisma.document.update({
       where: { id },
-      data: {
-        title,
-        description,
-        category,
-        status,
-        aiSummary,
-        aiSuggestedCategory,
-      },
+      data: { title, description, category, status, aiSummary, aiSuggestedCategory },
     })
-
-    return res.json(updated)
-  } catch (error) {
-    return res.status(500).json({ error: 'Failed to update document' })
+    res.json(updated)
+  } catch {
+    res.status(500).json({ error: 'Failed to update document' })
   }
 }
 
-export async function deleteDocument(req: Request, res: Response) {
+export async function deleteDocument(req: Request, res: Response): Promise<void> {
   try {
-    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id
+    const id = paramId(req)
+    const existing = await findAccessibleDocument(req, res, id)
+    if (!existing) return
 
-    const existing = await prisma.document.findUnique({
-      where: { id },
-    })
-
-    if (!existing) {
-      return res.status(404).json({ error: 'Document not found' })
-    }
-
-    if (req.user?.role !== 'CEO' && existing.ownerEmail !== req.user?.email) {
-      return res.status(404).json({ error: 'Document not found' })
-    }
-
-    await prisma.document.delete({
-      where: { id },
-    })
-
-    return res.status(204).send()
-  } catch (error) {
-    return res.status(500).json({ error: 'Failed to delete document' })
+    await prisma.document.delete({ where: { id } })
+    res.status(204).send()
+  } catch {
+    res.status(500).json({ error: 'Failed to delete document' })
   }
 }

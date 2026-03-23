@@ -5,9 +5,7 @@ import {
   getDocuments,
   updateDocument,
 } from '../services/documentService'
-import type { DocumentItem, DocumentStatus } from '../types/document'
-
-type CreatePayload = Omit<DocumentItem, 'id'>
+import type { DocumentCreatePayload, DocumentItem, DocumentStatus } from '../types/document'
 
 export const useDocumentStore = defineStore('documents', {
   state: () => ({
@@ -43,12 +41,12 @@ export const useDocumentStore = defineStore('documents', {
       }
     },
 
-    async addDocument(payload: CreatePayload) {
+    async addDocument(payload: DocumentCreatePayload) {
       const created = await createDocument(payload)
       this.items.unshift(created)
     },
 
-    async editDocument(id: string, payload: Partial<CreatePayload>) {
+    async editDocument(id: string, payload: Partial<Omit<DocumentItem, 'id'>>) {
       const updated = await updateDocument(id, payload)
       const idx = this.items.findIndex((item) => item.id === id)
       if (idx >= 0) {

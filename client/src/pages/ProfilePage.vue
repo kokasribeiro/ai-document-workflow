@@ -23,58 +23,37 @@
       </template>
 
       <form v-else class="grid gap-3" @submit.prevent="handleSave">
-        <template v-if="auth.user?.role === 'CEO'">
-          <input
-            v-model="form.email"
-            class="rounded-lg border border-slate-200 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-            type="email"
-            placeholder="Email"
-          />
-          <input
-            v-model="form.address"
-            class="rounded-lg border border-slate-200 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-            type="text"
-            placeholder="Address"
-          />
-          <input
-            v-model="form.phone"
-            class="rounded-lg border border-slate-200 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-            type="text"
-            placeholder="Phone"
-          />
-        </template>
-        <template v-else>
-          <input
-            v-model="form.email"
-            class="rounded-lg border border-slate-200 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-            type="email"
-            placeholder="Email"
-          />
-          <input
-            v-model="form.username"
-            class="rounded-lg border border-slate-200 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-            type="text"
-            placeholder="Username"
-          />
-          <input
-            v-model="form.address"
-            class="rounded-lg border border-slate-200 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-            type="text"
-            placeholder="Address"
-          />
-          <input
-            v-model="form.phone"
-            class="rounded-lg border border-slate-200 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-            type="text"
-            placeholder="Phone"
-          />
-        </template>
+        <input
+          v-model="form.email"
+          class="rounded-lg border border-slate-200 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+          type="email"
+          placeholder="Email"
+        />
+        <input
+          v-if="auth.user?.role === 'USER'"
+          v-model="form.username"
+          class="rounded-lg border border-slate-200 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+          type="text"
+          placeholder="Username"
+        />
         <input
           v-if="auth.user?.role === 'CEO'"
           v-model="form.name"
           class="rounded-lg border border-slate-200 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
           type="text"
           placeholder="Name"
+        />
+        <input
+          v-model="form.address"
+          class="rounded-lg border border-slate-200 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+          type="text"
+          placeholder="Address"
+        />
+        <input
+          v-model="form.phone"
+          class="rounded-lg border border-slate-200 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+          type="text"
+          placeholder="Phone"
         />
         <div class="flex gap-2">
           <button

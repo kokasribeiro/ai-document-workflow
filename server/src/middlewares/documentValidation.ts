@@ -14,30 +14,17 @@ const documentCreateSchema = z.object({
 
 const documentUpdateSchema = documentCreateSchema.partial()
 
-export function validateCreateDocument(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): void {
-  const result = documentCreateSchema.safeParse(req.body)
-  if (!result.success) {
-    res.status(400).json({ error: 'Invalid payload', details: result.error.flatten() })
-    return
+function validateBody(schema: z.ZodType) {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    const result = schema.safeParse(req.body)
+    if (!result.success) {
+      res.status(400).json({ error: 'Invalid payload', details: result.error.flatten() })
+      return
+    }
+    req.body = result.data
+    next()
   }
-  req.body = result.data
-  next()
 }
 
-export function validateUpdateDocument(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): void {
-  const result = documentUpdateSchema.safeParse(req.body)
-  if (!result.success) {
-    res.status(400).json({ error: 'Invalid payload', details: result.error.flatten() })
-    return
-  }
-  req.body = result.data
-  next()
-}
+export const validateCreateDocument = validateBody(documentCreateSchema)
+export const validateUpdateDocument = validateBody(documentUpdateSchema)

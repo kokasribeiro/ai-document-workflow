@@ -16,7 +16,7 @@
     <div class="grid gap-4 md:grid-cols-4">
       <article
         v-for="(stat, idx) in stats"
-        :key="stat.label"
+        :key="stat.status"
         v-motion
         :initial="{ opacity: 0, y: 18 }"
         :enter="{ opacity: 1, y: 0, transition: { duration: 360, delay: idx * 90 } }"
@@ -27,7 +27,7 @@
           <p class="text-sm text-slate-500">{{ stat.label }}</p>
           <span class="text-lg">{{ stat.icon }}</span>
         </div>
-        <p class="mt-2 text-3xl font-extrabold text-slate-800">{{ stat.value }}</p>
+        <p class="mt-2 text-3xl font-extrabold text-slate-800">{{ stat.count }}</p>
       </article>
     </div>
 
@@ -81,6 +81,7 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
+import { DOCUMENT_STATUS_META } from '../constants/documents'
 import { useDocumentStore } from '../stores/documentStore'
 import AiSummaryPanel from '../components/ai/AiSummaryPanel.vue'
 
@@ -90,37 +91,12 @@ onMounted(() => {
   store.fetchDocuments()
 })
 
-const draftCount = computed(() => store.items.filter((d) => d.status === 'Draft').length)
-const reviewCount = computed(() => store.items.filter((d) => d.status === 'Review').length)
-const approvedCount = computed(() => store.items.filter((d) => d.status === 'Approved').length)
-const rejectedCount = computed(() => store.items.filter((d) => d.status === 'Rejected').length)
-
-const stats = computed(() => [
-  {
-    label: 'Draft',
-    value: draftCount.value,
-    icon: '📝',
-    cardClass: 'border-slate-200/70',
-  },
-  {
-    label: 'Review',
-    value: reviewCount.value,
-    icon: '🕵️',
-    cardClass: 'border-amber-200/70',
-  },
-  {
-    label: 'Approved',
-    value: approvedCount.value,
-    icon: '✅',
-    cardClass: 'border-emerald-200/70',
-  },
-  {
-    label: 'Rejected',
-    value: rejectedCount.value,
-    icon: '⛔',
-    cardClass: 'border-rose-200/70',
-  },
-])
+const stats = computed(() =>
+  DOCUMENT_STATUS_META.map((meta) => ({
+    ...meta,
+    count: store.items.filter((d) => d.status === meta.status).length,
+  })),
+)
 
 const recentDocuments = computed(() => store.items.slice(0, 5))
 </script>

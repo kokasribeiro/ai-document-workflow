@@ -72,6 +72,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/authStore'
+import { isAtLeastAge } from '../utils/age'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -90,12 +91,7 @@ async function handleSubmit(): Promise<void> {
     if (mode.value === 'signin') {
       await auth.signIn(email.value, password.value)
     } else {
-      const now = new Date()
-      const birth = new Date(birthDate.value)
-      let age = now.getFullYear() - birth.getFullYear()
-      const monthDiff = now.getMonth() - birth.getMonth()
-      if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < birth.getDate())) age--
-      if (!birthDate.value || Number.isNaN(birth.getTime()) || age < 18) {
+      if (!birthDate.value || !isAtLeastAge(birthDate.value, 18)) {
         throw new Error('You must be at least 18 years old')
       }
       if (password.value !== confirmPassword.value) {

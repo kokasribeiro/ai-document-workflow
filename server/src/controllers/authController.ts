@@ -9,6 +9,7 @@ import {
   updateUserProfile,
   verifyUserPassword,
 } from '../auth/authStore'
+import { isAtLeastAge } from '../utils/age'
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -45,23 +46,13 @@ const changePasswordSchema = z.object({
   newPassword: z.string().min(6),
 })
 
-function isAdult(birthDate: string): boolean {
-  const birth = new Date(birthDate)
-  if (Number.isNaN(birth.getTime())) return false
-  const now = new Date()
-  let age = now.getFullYear() - birth.getFullYear()
-  const monthDiff = now.getMonth() - birth.getMonth()
-  if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < birth.getDate())) age--
-  return age >= 18
-}
-
 export async function register(req: Request, res: Response): Promise<void> {
   const parsed = registerSchema.safeParse(req.body)
   if (!parsed.success) {
     res.status(400).json({ error: 'Invalid payload' })
     return
   }
-  if (!isAdult(parsed.data.birthDate)) {
+  if (!isAtLeastAge(parsed.data.birthDate, 18)) {
     res.status(400).json({ error: 'User must be at least 18 years old' })
     return
   }

@@ -1,17 +1,11 @@
 import type { Request, Response } from 'express'
+import { prepareAiInput } from '../utils/aiText'
 
 const OLLAMA_URL = process.env.OLLAMA_URL ?? 'http://localhost:11434'
 const OLLAMA_MODEL = process.env.OLLAMA_MODEL ?? 'llama3.2:1b'
 const MAX_AI_INPUT_CHARS = Number(process.env.AI_MAX_INPUT_CHARS ?? 8000)
 const ENTERPRISE_BASE_PROMPT =
   'You are a professional enterprise document assistant inside a business workflow application. Be concise, reliable, and consistent. Use only the user-provided content. Never invent facts. Write in clear, simple business English. Keep responses short, structured, and professional. Do not use casual language or unnecessary text.'
-
-function prepareText(raw: string): string {
-  const normalized = raw.replace(/\s+/g, ' ').trim()
-  return normalized.length > MAX_AI_INPUT_CHARS
-    ? normalized.slice(0, MAX_AI_INPUT_CHARS)
-    : normalized
-}
 
 async function ollamaChat(system: string, user: string, numPredict: number): Promise<string> {
   const response = await fetch(`${OLLAMA_URL}/api/chat`, {
@@ -38,7 +32,7 @@ async function ollamaChat(system: string, user: string, numPredict: number): Pro
 
 export async function summarizeDocument(req: Request, res: Response): Promise<void> {
   try {
-    const text = prepareText(String(req.body?.text ?? ''))
+    const text = prepareAiInput(String(req.body?.text ?? ''), MAX_AI_INPUT_CHARS)
     if (!text) {
       res.status(400).json({ error: 'text is required' })
       return
@@ -56,7 +50,7 @@ export async function summarizeDocument(req: Request, res: Response): Promise<vo
 
 export async function suggestCategory(req: Request, res: Response): Promise<void> {
   try {
-    const text = prepareText(String(req.body?.text ?? ''))
+    const text = prepareAiInput(String(req.body?.text ?? ''), MAX_AI_INPUT_CHARS)
     if (!text) {
       res.status(400).json({ error: 'text is required' })
       return

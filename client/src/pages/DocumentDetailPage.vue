@@ -31,15 +31,7 @@
 
       <div class="flex flex-wrap gap-3">
         <template v-if="auth.isCEO">
-          <select
-            v-model="nextStatus"
-            class="rounded-lg border border-slate-300 px-3 py-2 text-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-          >
-            <option value="Draft">Draft</option>
-            <option value="Review">Review</option>
-            <option value="Approved">Approved</option>
-            <option value="Rejected">Rejected</option>
-          </select>
+          <DocumentStatusSelect v-model="nextStatus" :wide="false" />
           <button
             type="button"
             class="rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 font-medium text-white shadow transition hover:-translate-y-0.5 hover:from-indigo-500 hover:to-violet-500 disabled:cursor-not-allowed disabled:opacity-50"
@@ -64,12 +56,7 @@
       >
         <input v-model="form.title" class="rounded-lg border border-slate-200 px-3 py-2 transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100" type="text" />
         <textarea v-model="form.description" class="rounded-lg border border-slate-200 px-3 py-2 transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100" rows="5" />
-        <select v-model="form.category" class="rounded-lg border border-slate-200 px-3 py-2 transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100">
-          <option value="Invoice">Invoice</option>
-          <option value="Contract">Contract</option>
-          <option value="Report">Report</option>
-          <option value="HR">HR</option>
-        </select>
+        <CategorySelect v-model="form.category" />
         <button type="submit" class="w-fit rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 font-medium text-white shadow transition hover:-translate-y-0.5 hover:from-indigo-500 hover:to-violet-500">
           Save Changes
         </button>
@@ -86,6 +73,8 @@ import { useDocumentStore } from '../stores/documentStore'
 import { useAuthStore } from '../stores/authStore'
 import { getDocumentById } from '../services/documentService'
 import type { DocumentItem, DocumentStatus } from '../types/document'
+import CategorySelect from '../components/documents/CategorySelect.vue'
+import DocumentStatusSelect from '../components/documents/DocumentStatusSelect.vue'
 import StatusBadge from '../components/documents/StatusBadge.vue'
 
 const route = useRoute()
@@ -140,7 +129,6 @@ async function handleSave(): Promise<void> {
     title: form.title,
     description: form.description,
     category: form.category,
-    updatedAt: new Date().toISOString(),
   })
   await loadDocument()
   isEditing.value = false
@@ -167,7 +155,6 @@ async function handleStatusSave(): Promise<void> {
   try {
     await store.editDocument(document.value.id, {
       status: nextStatus.value,
-      updatedAt: new Date().toISOString(),
     })
     await loadDocument()
     statusSuccess.value = `Status updated to ${nextStatus.value}.`

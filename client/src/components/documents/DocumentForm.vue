@@ -24,12 +24,7 @@
 
     <div>
       <label class="mb-1 block text-sm font-medium">Category</label>
-      <select v-model="category" class="w-full rounded-lg border border-slate-200 px-3 py-2 transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100">
-        <option value="Invoice">Invoice</option>
-        <option value="Contract">Contract</option>
-        <option value="Report">Report</option>
-        <option value="HR">HR</option>
-      </select>
+      <CategorySelect v-model="category" />
     </div>
 
     <div class="flex flex-wrap gap-3">
@@ -73,19 +68,18 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { DEFAULT_DOCUMENT_CATEGORY } from '../../constants/documents'
 import { useDocumentStore } from '../../stores/documentStore'
 import { summarizeDocument, suggestCategory } from '../../services/aiService'
-import * as pdfjsLib from 'pdfjs-dist'
-import pdfWorkerSrc from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
-
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerSrc
+import { extractPdfText } from '../../utils/pdfText'
+import CategorySelect from './CategorySelect.vue'
 
 const router = useRouter()
 const store = useDocumentStore()
 
 const title = ref('')
 const description = ref('')
-const category = ref('Invoice')
+const category = ref<string>(DEFAULT_DOCUMENT_CATEGORY)
 const aiSummary = ref('')
 const aiLoading = ref(false)
 const aiError = ref('')
@@ -93,31 +87,43 @@ const submitError = ref('')
 const fileName = ref('')
 const fileError = ref('')
 
-async function handleAiSummary() {
+async function runAiOp<T>(
+  operation: () => Promise<T>,
+  onSuccess: (value: T) => void,
+  fallbackMessage: string,
+): Promise<void> {
   aiLoading.value = true
   aiError.value = ''
   try {
-    aiSummary.value = await summarizeDocument(description.value)
+    onSuccess(await operation())
   } catch (error) {
-    aiError.value = error instanceof Error ? error.message : 'Failed to generate summary'
+    aiError.value = error instanceof Error ? error.message : fallbackMessage
   } finally {
     aiLoading.value = false
   }
 }
 
-async function handleAiCategory() {
-  aiLoading.value = true
-  aiError.value = ''
-  try {
-    category.value = await suggestCategory(description.value)
-  } catch (error) {
-    aiError.value = error instanceof Error ? error.message : 'Failed to suggest category'
-  } finally {
-    aiLoading.value = false
-  }
+async function handleAiSummary(): Promise<void> {
+  await runAiOp(
+    () => summarizeDocument(description.value),
+    (summary) => {
+      aiSummary.value = summary
+    },
+    'Failed to generate summary',
+  )
 }
 
-async function handleSubmit() {
+async function handleAiCategory(): Promise<void> {
+  await runAiOp(
+    () => suggestCategory(description.value),
+    (suggested) => {
+      category.value = suggested
+    },
+    'Failed to suggest category',
+  )
+}
+
+async function handleSubmit(): Promise<void> {
   submitError.value = ''
   try {
     await store.addDocument({
@@ -125,77 +131,13 @@ async function handleSubmit() {
       description: description.value,
       category: category.value,
       status: 'Draft',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
       aiSummary: aiSummary.value,
       aiSuggestedCategory: category.value,
     })
-    router.push('/documents')
+    await router.push('/documents')
   } catch (error) {
     submitError.value = error instanceof Error ? error.message : 'Failed to save document'
   }
-}
-
-async function extractPdfText(file: File): Promise<string> {
-  const bytes = new Uint8Array(await file.arrayBuffer())
-  const task = pdfjsLib.getDocument({ data: bytes })
-  const pdf = await task.promise
-  const pages: string[] = []
-
-  for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
-    const page = await pdf.getPage(pageNumber)
-    const textContent = await page.getTextContent()
-    const textItems = textContent.items
-      .map((item) => item as { str?: string; transform?: number[] })
-      .filter((item) => typeof item.str === 'string' && Array.isArray(item.transform)) as Array<{
-      str: string
-      transform: number[]
-    }>
-
-    // Rebuild line order by Y coordinate and then by X coordinate.
-    const rows = new Map<number, Array<{ x: number; text: string }>>()
-    for (const item of textItems) {
-      const transform = item.transform
-      if (!transform || transform.length < 6) continue
-      const yRaw = transform[5]
-      const xRaw = transform[4]
-      if (typeof yRaw !== 'number' || typeof xRaw !== 'number') continue
-      const y = Math.round(yRaw * 10) / 10
-      const x = xRaw
-      const bucket = rows.get(y) ?? []
-      bucket.push({ x, text: item.str })
-      rows.set(y, bucket)
-    }
-
-    const sortedY = [...rows.keys()].sort((a, b) => b - a)
-    const lines = sortedY.map((y) => {
-      const parts = (rows.get(y) ?? []).sort((a, b) => a.x - b.x)
-      return parts
-        .map((p) => p.text.trim())
-        .filter(Boolean)
-        .join(' ')
-        .replace(/\s+/g, ' ')
-        .trim()
-    })
-
-    const cleanLines = lines.filter((line) => {
-      if (!line) return false
-      const hasLetters = /[A-Za-zÀ-ÿ]/.test(line)
-      if (!hasLetters) return false
-      const symbolDensity = (line.match(/[$_=|{}[\]<>]/g)?.length ?? 0) / line.length
-      if (symbolDensity > 0.15) return false
-      const longTokenNoise = line
-        .split(/\s+/)
-        .some((token) => token.length > 25 && !/[aeiouà-ÿ]/i.test(token))
-      if (longTokenNoise) return false
-      return true
-    })
-
-    const pageText = cleanLines.join('\n').trim()
-    if (pageText) pages.push(pageText)
-  }
-
-  return pages.join('\n\n')
 }
 
 async function handleFileUpload(event: Event): Promise<void> {

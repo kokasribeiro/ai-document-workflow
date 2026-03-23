@@ -1,5 +1,5 @@
 import { apiRequest } from './api'
-import type { DocumentItem } from '../types/document'
+import type { DocumentCreatePayload, DocumentItem } from '../types/document'
 
 export async function getDocuments(): Promise<DocumentItem[]> {
   return apiRequest<DocumentItem[]>('/documents')
@@ -9,9 +9,7 @@ export async function getDocumentById(id: string): Promise<DocumentItem> {
   return apiRequest<DocumentItem>(`/documents/${id}`)
 }
 
-export async function createDocument(
-  payload: Omit<DocumentItem, 'id'>
-): Promise<DocumentItem> {
+export async function createDocument(payload: DocumentCreatePayload): Promise<DocumentItem> {
   return apiRequest<DocumentItem>('/documents', {
     method: 'POST',
     body: JSON.stringify(payload),

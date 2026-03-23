@@ -1,5 +1,5 @@
 import { apiRequest } from './api'
-const MAX_CLIENT_AI_INPUT_CHARS = 12000
+import { compactWhitespace, MAX_CLIENT_AI_INPUT_CHARS } from '../utils/text'
 
 function assertNonEmptyText(text: string): void {
   if (!text.trim()) {
@@ -7,16 +7,9 @@ function assertNonEmptyText(text: string): void {
   }
 }
 
-function compactText(text: string): string {
-  const normalized = text.replace(/\s+/g, ' ').trim()
-  return normalized.length > MAX_CLIENT_AI_INPUT_CHARS
-    ? normalized.slice(0, MAX_CLIENT_AI_INPUT_CHARS)
-    : normalized
-}
-
 export async function summarizeDocument(text: string): Promise<string> {
   assertNonEmptyText(text)
-  const prepared = compactText(text)
+  const prepared = compactWhitespace(text, MAX_CLIENT_AI_INPUT_CHARS)
   const data = await apiRequest<{ summary?: string }>('/ai/summarize', {
     method: 'POST',
     body: JSON.stringify({ text: prepared }),
@@ -28,7 +21,7 @@ export async function summarizeDocument(text: string): Promise<string> {
 
 export async function suggestCategory(text: string): Promise<string> {
   assertNonEmptyText(text)
-  const prepared = compactText(text)
+  const prepared = compactWhitespace(text, MAX_CLIENT_AI_INPUT_CHARS)
   const data = await apiRequest<{ category?: string }>('/ai/suggest-category', {
     method: 'POST',
     body: JSON.stringify({ text: prepared }),
