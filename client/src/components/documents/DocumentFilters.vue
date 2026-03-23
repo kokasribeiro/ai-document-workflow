@@ -1,29 +1,31 @@
-<script setup lang="ts">
-import type { DocumentFilters } from '../../types/document'
-
-const model = defineModel<DocumentFilters>({ required: true })
-</script>
-
 <template>
-  <section class="flex gap-3">
+  <div class="mb-4 grid gap-3 rounded-xl bg-white p-4 shadow md:grid-cols-3">
     <input
-      v-model="model.query"
+      v-model="store.search"
+      class="rounded border px-3 py-2"
       type="text"
-      placeholder="Search documents"
-      class="rounded border border-slate-300 px-3 py-2"
+      placeholder="Search by title"
     />
-    <select v-model="model.status" class="rounded border border-slate-300 px-3 py-2">
-      <option value="all">All status</option>
-      <option value="draft">Draft</option>
-      <option value="processing">Processing</option>
-      <option value="completed">Completed</option>
-      <option value="error">Error</option>
+
+    <select v-model="store.statusFilter" class="rounded border px-3 py-2">
+      <option value="">All statuses</option>
+      <option value="Draft">Draft</option>
+      <option value="Review">Review</option>
+      <option value="Approved">Approved</option>
+      <option value="Rejected">Rejected</option>
     </select>
-    <input
-      v-model="model.category"
-      type="text"
-      placeholder="Category or all"
-      class="rounded border border-slate-300 px-3 py-2"
-    />
-  </section>
+
+    <select v-model="store.categoryFilter" class="rounded border px-3 py-2">
+      <option value="">All categories</option>
+      <option value="Invoice">Invoice</option>
+      <option value="Contract">Contract</option>
+      <option value="Report">Report</option>
+      <option value="HR">HR</option>
+    </select>
+  </div>
 </template>
+
+<script setup lang="ts">
+import { useDocumentStore } from '../../stores/documentStore'
+const store = useDocumentStore()
+</script>
