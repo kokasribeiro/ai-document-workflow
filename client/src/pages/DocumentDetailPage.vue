@@ -4,6 +4,8 @@
     <p v-if="loading" class="text-sm text-slate-500">Loading document...</p>
     <p v-else-if="error" class="text-sm text-rose-600">{{ error }}</p>
     <div v-else-if="document" class="space-y-4 rounded-2xl border border-slate-200/70 bg-white p-6 shadow-sm">
+      <p v-if="statusError" class="text-sm text-rose-600">{{ statusError }}</p>
+      <p v-if="statusSuccess" class="text-sm text-emerald-700">{{ statusSuccess }}</p>
       <div class="flex items-start justify-between gap-3">
         <div>
           <h3 class="text-xl font-semibold">{{ document.title }}</h3>
@@ -90,6 +92,8 @@ const store = useDocumentStore()
 
 const loading = ref(true)
 const error = ref('')
+const statusError = ref('')
+const statusSuccess = ref('')
 const document = ref<DocumentItem | null>(null)
 const isEditing = ref(false)
 const nextStatus = ref<DocumentStatus>('Draft')
@@ -150,11 +154,19 @@ async function handleDelete(): Promise<void> {
 async function handleStatusSave(): Promise<void> {
   if (!document.value) return
   if (nextStatus.value === document.value.status) return
-  await store.editDocument(document.value.id, {
-    status: nextStatus.value,
-    updatedAt: new Date().toISOString(),
-  })
-  await loadDocument()
+  statusError.value = ''
+  statusSuccess.value = ''
+  try {
+    await store.editDocument(document.value.id, {
+      status: nextStatus.value,
+      updatedAt: new Date().toISOString(),
+    })
+    await loadDocument()
+    statusSuccess.value = `Status updated to ${nextStatus.value}.`
+  } catch (e) {
+    statusError.value =
+      e instanceof Error ? e.message : 'Failed to update document status'
+  }
 }
 
 void loadDocument()

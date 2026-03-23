@@ -1,15 +1,30 @@
 import { API_BASE_URL } from './api'
 import type { DocumentItem } from '../types/document'
 
+async function parseErrorMessage(response: Response, fallback: string): Promise<string> {
+  try {
+    const data = (await response.json()) as { error?: string }
+    return data.error || fallback
+  } catch {
+    return fallback
+  }
+}
+
 export async function getDocuments(): Promise<DocumentItem[]> {
   const response = await fetch(`${API_BASE_URL}/documents`)
-  if (!response.ok) throw new Error('Failed to fetch documents')
+  if (!response.ok) {
+    const message = await parseErrorMessage(response, 'Failed to fetch documents')
+    throw new Error(message)
+  }
   return response.json()
 }
 
 export async function getDocumentById(id: string): Promise<DocumentItem> {
   const response = await fetch(`${API_BASE_URL}/documents/${id}`)
-  if (!response.ok) throw new Error('Failed to fetch document')
+  if (!response.ok) {
+    const message = await parseErrorMessage(response, 'Failed to fetch document')
+    throw new Error(message)
+  }
   return response.json()
 }
 
@@ -22,7 +37,10 @@ export async function createDocument(
     body: JSON.stringify(payload),
   })
 
-  if (!response.ok) throw new Error('Failed to create document')
+  if (!response.ok) {
+    const message = await parseErrorMessage(response, 'Failed to create document')
+    throw new Error(message)
+  }
   return response.json()
 }
 
@@ -36,7 +54,10 @@ export async function updateDocument(
     body: JSON.stringify(payload),
   })
 
-  if (!response.ok) throw new Error('Failed to update document')
+  if (!response.ok) {
+    const message = await parseErrorMessage(response, 'Failed to update document')
+    throw new Error(message)
+  }
   return response.json()
 }
 
@@ -45,5 +66,8 @@ export async function deleteDocument(id: string): Promise<void> {
     method: 'DELETE',
   })
 
-  if (!response.ok) throw new Error('Failed to delete document')
+  if (!response.ok) {
+    const message = await parseErrorMessage(response, 'Failed to delete document')
+    throw new Error(message)
+  }
 }
