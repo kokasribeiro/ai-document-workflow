@@ -33,6 +33,7 @@
         <select
           v-model="nextStatus"
           class="rounded-lg border border-slate-300 px-3 py-2 text-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+          :disabled="!canSetStatus(nextStatus)"
         >
           <option value="Draft">Draft</option>
           <option value="Review">Review</option>
@@ -42,11 +43,17 @@
         <button
           type="button"
           class="rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 font-medium text-white shadow transition hover:-translate-y-0.5 hover:from-indigo-500 hover:to-violet-500 disabled:cursor-not-allowed disabled:opacity-50"
-          :disabled="nextStatus === document.status"
+          :disabled="nextStatus === document.status || !canSetStatus(nextStatus)"
           @click="handleStatusSave"
         >
           Save Changes
         </button>
+        <p
+          v-if="!canSetStatus(nextStatus)"
+          class="self-center text-xs font-medium text-amber-700"
+        >
+          Only CEO can set Approved or Rejected.
+        </p>
 
         <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 font-medium text-slate-700 transition hover:bg-slate-100" @click="toggleEdit">
           {{ isEditing ? 'Cancel Edit' : 'Edit' }}
@@ -82,6 +89,7 @@
 import { reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useDocumentStore } from '../stores/documentStore'
+import { useAuthStore } from '../stores/authStore'
 import { getDocumentById } from '../services/documentService'
 import type { DocumentItem, DocumentStatus } from '../types/document'
 import StatusBadge from '../components/documents/StatusBadge.vue'
@@ -89,6 +97,7 @@ import StatusBadge from '../components/documents/StatusBadge.vue'
 const route = useRoute()
 const router = useRouter()
 const store = useDocumentStore()
+const auth = useAuthStore()
 
 const loading = ref(true)
 const error = ref('')
@@ -129,6 +138,11 @@ async function loadDocument(): Promise<void> {
 function toggleEdit(): void {
   isEditing.value = !isEditing.value
   if (isEditing.value && document.value) syncForm(document.value)
+}
+
+function canSetStatus(status: DocumentStatus): boolean {
+  if (status === 'Approved' || status === 'Rejected') return auth.isCEO
+  return true
 }
 
 async function handleSave(): Promise<void> {

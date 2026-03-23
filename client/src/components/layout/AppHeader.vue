@@ -8,11 +8,33 @@
       >
         AI Document Workflow System
       </h1>
-      <span
-        class="rounded-full bg-gradient-to-r from-slate-900 to-indigo-800 px-3 py-1 text-sm text-white shadow"
-      >
-        Vue + TS
-      </span>
+      <div class="flex items-center gap-3">
+        <span
+          v-if="auth.user"
+          class="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700"
+        >
+          {{ auth.user.email }} ({{ auth.user.role }})
+        </span>
+        <button
+          class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+          @click="logout"
+        >
+          Logout
+        </button>
+      </div>
     </div>
   </header>
 </template>
+
+<script setup lang="ts">
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '../../stores/authStore'
+
+const router = useRouter()
+const auth = useAuthStore()
+
+async function logout(): Promise<void> {
+  auth.clearSession()
+  await router.push('/auth')
+}
+</script>
