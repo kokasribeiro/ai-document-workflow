@@ -1,6 +1,6 @@
 <template>
   <section>
-    <h2 class="mb-6 text-2xl font-semibold">Create Document</h2>
+    <h2 class="mb-6 text-3xl font-bold tracking-tight text-slate-800">Create Document</h2>
     <DocumentForm />
   </section>
 </template>

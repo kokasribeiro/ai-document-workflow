@@ -1,21 +1,21 @@
 <template>
   <section>
-    <h2 class="mb-6 text-2xl font-semibold">Dashboard</h2>
+    <h2 class="mb-6 text-3xl font-bold tracking-tight text-slate-800">Dashboard</h2>
 
     <div class="grid gap-4 md:grid-cols-4">
-      <div class="rounded-xl bg-white p-4 shadow">
+      <div class="rounded-2xl border border-slate-200/70 bg-white p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
         <p class="text-sm text-slate-500">Draft</p>
         <p class="text-2xl font-bold">{{ draftCount }}</p>
       </div>
-      <div class="rounded-xl bg-white p-4 shadow">
+      <div class="rounded-2xl border border-amber-200/70 bg-white p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
         <p class="text-sm text-slate-500">Review</p>
         <p class="text-2xl font-bold">{{ reviewCount }}</p>
       </div>
-      <div class="rounded-xl bg-white p-4 shadow">
+      <div class="rounded-2xl border border-emerald-200/70 bg-white p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
         <p class="text-sm text-slate-500">Approved</p>
         <p class="text-2xl font-bold">{{ approvedCount }}</p>
       </div>
-      <div class="rounded-xl bg-white p-4 shadow">
+      <div class="rounded-2xl border border-rose-200/70 bg-white p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
         <p class="text-sm text-slate-500">Rejected</p>
         <p class="text-2xl font-bold">{{ rejectedCount }}</p>
       </div>

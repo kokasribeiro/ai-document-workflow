@@ -1,6 +1,18 @@
 import { Request, Response } from 'express'
 import { prisma } from '../lib/prisma'
 
+const allowedTransitions: Record<string, string[]> = {
+  Draft: ['Review'],
+  Review: ['Approved', 'Rejected'],
+  Approved: [],
+  Rejected: ['Review'],
+}
+
+function canTransition(fromStatus: string, toStatus: string): boolean {
+  if (fromStatus === toStatus) return true
+  return allowedTransitions[fromStatus]?.includes(toStatus) ?? false
+}
+
 export async function getDocuments(req: Request, res: Response) {
   try {
     const documents = await prisma.document.findMany({
@@ -35,20 +47,7 @@ export async function getDocumentById(req: Request, res: Response) {
 
 export async function createDocument(req: Request, res: Response) {
   try {
-    const {
-      title,
-      description,
-      category,
-      status,
-      aiSummary,
-      aiSuggestedCategory,
-    } = req.body
-
-    if (!title || !description || !category || !status) {
-      return res.status(400).json({
-        error: 'title, description, category and status are required',
-      })
-    }
+    const { title, description, category, status, aiSummary, aiSuggestedCategory } = req.body
 
     const document = await prisma.document.create({
       data: {
@@ -85,6 +84,12 @@ export async function updateDocument(req: Request, res: Response) {
 
     if (!existing) {
       return res.status(404).json({ error: 'Document not found' })
+    }
+
+    if (status && !canTransition(existing.status, status)) {
+      return res.status(400).json({
+        error: `Invalid status transition: ${existing.status} -> ${status}`,
+      })
     }
 
     const updated = await prisma.document.update({

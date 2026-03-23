@@ -15,15 +15,15 @@ const props = defineProps<{
 const badgeClass = computed(() => {
   switch (props.status) {
     case 'Draft':
-      return 'bg-slate-200 text-slate-700'
+      return 'bg-slate-200 text-slate-700 ring-1 ring-slate-300'
     case 'Review':
-      return 'bg-amber-100 text-amber-700'
+      return 'bg-amber-100 text-amber-700 ring-1 ring-amber-200'
     case 'Approved':
-      return 'bg-emerald-100 text-emerald-700'
+      return 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200'
     case 'Rejected':
-      return 'bg-rose-100 text-rose-700'
+      return 'bg-rose-100 text-rose-700 ring-1 ring-rose-200'
     default:
-      return 'bg-slate-200 text-slate-700'
+      return 'bg-slate-200 text-slate-700 ring-1 ring-slate-300'
   }
 })
 </script>

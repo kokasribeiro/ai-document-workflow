@@ -1,9 +1,9 @@
 <template>
   <section>
-    <h2 class="mb-6 text-2xl font-semibold">Document Detail</h2>
+    <h2 class="mb-6 text-3xl font-bold tracking-tight text-slate-800">Document Detail</h2>
     <p v-if="loading" class="text-sm text-slate-500">Loading document...</p>
     <p v-else-if="error" class="text-sm text-rose-600">{{ error }}</p>
-    <div v-else-if="document" class="space-y-4 rounded-xl bg-white p-6 shadow">
+    <div v-else-if="document" class="space-y-4 rounded-2xl border border-slate-200/70 bg-white p-6 shadow-sm">
       <div class="flex items-start justify-between gap-3">
         <div>
           <h3 class="text-xl font-semibold">{{ document.title }}</h3>
@@ -22,7 +22,7 @@
         </p>
       </div>
 
-      <div v-if="document.aiSummary" class="rounded-lg bg-slate-50 p-4">
+      <div v-if="document.aiSummary" class="rounded-xl border border-indigo-100 bg-indigo-50/70 p-4">
         <p class="text-xs font-semibold text-slate-500">AI Summary</p>
         <p class="mt-1 text-sm text-slate-700">{{ document.aiSummary }}</p>
       </div>
@@ -30,7 +30,7 @@
       <div class="flex flex-wrap gap-3">
         <select
           v-model="nextStatus"
-          class="rounded border px-3 py-2 text-sm"
+          class="rounded-lg border border-slate-300 px-3 py-2 text-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
           @change="handleStatusChange"
         >
           <option value="Draft">Draft</option>
@@ -39,28 +39,28 @@
           <option value="Rejected">Rejected</option>
         </select>
 
-        <button type="button" class="rounded border px-4 py-2" @click="toggleEdit">
+        <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 font-medium text-slate-700 transition hover:bg-slate-100" @click="toggleEdit">
           {{ isEditing ? 'Cancel Edit' : 'Edit' }}
         </button>
-        <button type="button" class="rounded border border-rose-300 px-4 py-2 text-rose-700" @click="handleDelete">
+        <button type="button" class="rounded-lg border border-rose-300 px-4 py-2 font-medium text-rose-700 transition hover:bg-rose-50" @click="handleDelete">
           Delete
         </button>
       </div>
 
       <form
         v-if="isEditing"
-        class="grid gap-3 rounded-lg border p-4"
+        class="grid gap-3 rounded-xl border border-slate-200 p-4"
         @submit.prevent="handleSave"
       >
-        <input v-model="form.title" class="rounded border px-3 py-2" type="text" />
-        <textarea v-model="form.description" class="rounded border px-3 py-2" rows="5" />
-        <select v-model="form.category" class="rounded border px-3 py-2">
+        <input v-model="form.title" class="rounded-lg border border-slate-200 px-3 py-2 transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100" type="text" />
+        <textarea v-model="form.description" class="rounded-lg border border-slate-200 px-3 py-2 transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100" rows="5" />
+        <select v-model="form.category" class="rounded-lg border border-slate-200 px-3 py-2 transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100">
           <option value="Invoice">Invoice</option>
           <option value="Contract">Contract</option>
           <option value="Report">Report</option>
           <option value="HR">HR</option>
         </select>
-        <button type="submit" class="w-fit rounded bg-slate-900 px-4 py-2 text-white">
+        <button type="submit" class="w-fit rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 font-medium text-white shadow transition hover:-translate-y-0.5 hover:from-indigo-500 hover:to-violet-500">
           Save Changes
         </button>
       </form>

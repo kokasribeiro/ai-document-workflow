@@ -1,18 +1,18 @@
 <template>
-  <form class="space-y-4 rounded-xl bg-white p-6 shadow" @submit.prevent="handleSubmit">
+  <form class="space-y-4 rounded-2xl border border-slate-200/70 bg-white p-6 shadow-sm" @submit.prevent="handleSubmit">
     <div>
       <label class="mb-1 block text-sm font-medium">Title</label>
-      <input v-model="title" class="w-full rounded border px-3 py-2" type="text" />
+      <input v-model="title" class="w-full rounded-lg border border-slate-200 px-3 py-2 transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100" type="text" />
     </div>
 
     <div>
       <label class="mb-1 block text-sm font-medium">Description</label>
-      <textarea v-model="description" class="w-full rounded border px-3 py-2" rows="6" />
+      <textarea v-model="description" class="w-full rounded-lg border border-slate-200 px-3 py-2 transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100" rows="6" />
     </div>
 
     <div>
       <label class="mb-1 block text-sm font-medium">Category</label>
-      <select v-model="category" class="w-full rounded border px-3 py-2">
+      <select v-model="category" class="w-full rounded-lg border border-slate-200 px-3 py-2 transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100">
         <option value="Invoice">Invoice</option>
         <option value="Contract">Contract</option>
         <option value="Report">Report</option>
@@ -21,13 +21,13 @@
     </div>
 
     <div class="flex flex-wrap gap-3">
-      <button type="submit" class="rounded bg-slate-900 px-4 py-2 text-white">
+      <button type="submit" class="rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 font-medium text-white shadow transition hover:-translate-y-0.5 hover:from-indigo-500 hover:to-violet-500">
         Save Document
       </button>
 
       <button
         type="button"
-        class="rounded border px-4 py-2"
+        class="rounded-lg border border-slate-300 px-4 py-2 font-medium text-slate-700 transition hover:bg-slate-100"
         @click="handleAiSummary"
       >
         Generate AI Summary
@@ -35,7 +35,7 @@
 
       <button
         type="button"
-        class="rounded border px-4 py-2"
+        class="rounded-lg border border-slate-300 px-4 py-2 font-medium text-slate-700 transition hover:bg-slate-100"
         @click="handleAiCategory"
       >
         Suggest Category
@@ -45,7 +45,7 @@
     <p v-if="aiLoading" class="text-sm text-slate-500">AI is processing...</p>
     <p v-if="aiError" class="text-sm text-rose-600">{{ aiError }}</p>
 
-    <div v-if="aiSummary" class="rounded-lg bg-slate-50 p-4">
+    <div v-if="aiSummary" class="rounded-xl border border-indigo-100 bg-indigo-50/70 p-4">
       <p class="text-xs font-semibold text-slate-500">AI Summary</p>
       <p class="mt-2 text-sm text-slate-700">{{ aiSummary }}</p>
     </div>

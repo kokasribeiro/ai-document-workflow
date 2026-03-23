@@ -1,9 +1,11 @@
 <template>
-  <div class="min-h-screen bg-slate-100 text-slate-900">
+  <div
+    class="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-purple-100 text-slate-900"
+  >
     <AppHeader />
     <div class="flex">
       <AppSidebar />
-      <main class="flex-1 p-6">
+      <main class="flex-1 p-6 md:p-8">
         <RouterView />
       </main>
     </div>
