@@ -5,11 +5,11 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [vue(), tailwindcss()],
   build: {
-    chunkSizeWarningLimit: 1500,
     rollupOptions: {
       output: {
         manualChunks: {
-          'pdf-worker': ['pdfjs-dist'],
+          vendor: ['vue', 'vue-router', 'pinia'],
+          pdf: ['pdfjs-dist'],
         },
       },
     },

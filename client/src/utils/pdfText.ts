@@ -1,7 +1,7 @@
 import * as pdfjsLib from 'pdfjs-dist'
-import pdfWorkerSrc from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerSrc
+const PDFJS_VERSION = pdfjsLib.version
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${PDFJS_VERSION}/build/pdf.worker.min.mjs`
 
 /**
  * Extracts readable text from a PDF file (browser, via pdf.js).
