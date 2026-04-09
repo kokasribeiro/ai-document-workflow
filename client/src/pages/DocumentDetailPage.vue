@@ -117,6 +117,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useDocumentStore } from '../stores/documentStore'
 import { useAuthStore } from '../stores/authStore'
 import { getDocumentById } from '../services/documentService'
+import { getComments, addComment, type Comment } from '../services/commentService'
 import type { DocumentItem, DocumentStatus } from '../types/document'
 import CategorySelect from '../components/documents/CategorySelect.vue'
 import DocumentStatusSelect from '../components/documents/DocumentStatusSelect.vue'
@@ -140,6 +141,10 @@ const form = reactive({
   category: 'Invoice',
 })
 
+const comments = ref<Comment[]>([])
+const newComment = ref('')
+const addingComment = ref(false)
+
 function syncForm(doc: DocumentItem): void {
   form.title = doc.title
   form.description = doc.description
@@ -152,8 +157,9 @@ async function loadDocument(): Promise<void> {
   error.value = ''
   try {
     const id = String(route.params.id ?? '')
-    const found = await getDocumentById(id)
+    const [found, docComments] = await Promise.all([getDocumentById(id), getComments(id)])
     document.value = found
+    comments.value = docComments
     syncForm(found)
   } catch {
     error.value = 'Could not load document'
