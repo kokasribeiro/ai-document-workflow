@@ -7,7 +7,7 @@
       placeholder="Search by title"
     />
 
-    <DocumentStatusSelect v-model="store.statusFilter" :include-empty="true" empty-label="All statuses" />
+    <DocumentStatusSelect v-model="store.statusFilter" :include-empty="true" empty-label="All Status" />
     <CategorySelect v-model="store.categoryFilter" :include-empty="true" />
   </div>
 </template>

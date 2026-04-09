@@ -13,10 +13,20 @@ export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T
   const token = getToken()
   if (token) headers.set('Authorization', `Bearer ${token}`)
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    ...init,
-    headers,
-  })
+  let response: Response
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      ...init,
+      headers,
+    })
+  } catch (e) {
+    if (e instanceof TypeError) {
+      throw new Error(
+        `Cannot reach the API at ${API_BASE_URL}. Start the server: cd server && npm run dev`,
+      )
+    }
+    throw e
+  }
 
   const fallback = `Request failed: ${response.status}`
   const isPublicAuthRoute = path === '/auth/login' || path === '/auth/register'

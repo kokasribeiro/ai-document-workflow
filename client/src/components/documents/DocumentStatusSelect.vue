@@ -23,7 +23,7 @@ withDefaults(
   }>(),
   {
     includeEmpty: false,
-    emptyLabel: 'All statuses',
+    emptyLabel: 'All Status',
     wide: true,
   },
 )

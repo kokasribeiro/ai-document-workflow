@@ -42,18 +42,16 @@
           type="date"
           placeholder="Date of birth"
         />
-        <input
+        <PasswordInput
           v-model="password"
-          class="w-full rounded-lg border border-slate-200 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-          type="password"
           placeholder="Password"
+          :autocomplete="mode === 'signin' ? 'current-password' : 'new-password'"
         />
-        <input
+        <PasswordInput
           v-if="mode === 'register'"
           v-model="confirmPassword"
-          class="w-full rounded-lg border border-slate-200 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-          type="password"
           placeholder="Repeat password"
+          autocomplete="new-password"
         />
         <p v-if="error" class="text-sm text-rose-600">{{ error }}</p>
 
@@ -71,6 +69,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import PasswordInput from '../components/PasswordInput.vue'
 import { useAuthStore } from '../stores/authStore'
 import { isAtLeastAge } from '../utils/age'
 
