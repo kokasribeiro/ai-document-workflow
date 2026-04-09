@@ -4,30 +4,30 @@
       v-motion
       :initial="{ opacity: 0, y: 20 }"
       :enter="{ opacity: 1, y: 0, transition: { duration: 450 } }"
-      class="overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 p-6 text-white shadow-lg"
+      class="overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 p-5 text-white shadow-lg md:rounded-3xl md:p-6"
     >
       <p class="text-sm/6 text-indigo-100">AI Document Workflow</p>
-      <h2 class="text-3xl font-bold tracking-tight">Dashboard</h2>
+      <h2 class="text-2xl font-bold tracking-tight md:text-3xl">Dashboard</h2>
       <p class="mt-2 text-sm text-indigo-100">
         Track workflow status, review recent activity, and keep documents moving.
       </p>
     </div>
 
-    <div class="grid gap-4 md:grid-cols-4">
+    <div class="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
       <article
         v-for="(stat, idx) in stats"
         :key="stat.status"
         v-motion
         :initial="{ opacity: 0, y: 18 }"
         :enter="{ opacity: 1, y: 0, transition: { duration: 360, delay: idx * 90 } }"
-        class="rounded-2xl border bg-white p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+        class="rounded-xl border bg-white p-3 shadow-sm transition hover:-translate-y-1 hover:shadow-md md:rounded-2xl md:p-4"
         :class="stat.cardClass"
       >
         <div class="flex items-center justify-between">
           <p class="text-sm text-slate-500">{{ stat.label }}</p>
           <span class="text-lg">{{ stat.icon }}</span>
         </div>
-        <p class="mt-2 text-3xl font-extrabold text-slate-800">{{ stat.count }}</p>
+        <p class="mt-1 text-2xl font-extrabold text-slate-800 md:mt-2 md:text-3xl">{{ stat.count }}</p>
       </article>
     </div>
 

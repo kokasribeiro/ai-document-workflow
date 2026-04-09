@@ -1,4 +1,5 @@
 <template>
+  <!-- Desktop sidebar -->
   <aside
     class="hidden w-72 border-r border-indigo-200/50 bg-gradient-to-b from-indigo-100/80 via-violet-100/80 to-fuchsia-100/80 p-4 backdrop-blur md:block"
   >
@@ -14,10 +15,48 @@
       </RouterLink>
     </nav>
   </aside>
+
+  <!-- Mobile drawer overlay -->
+  <Teleport to="body">
+    <Transition name="drawer">
+      <div v-if="open" class="fixed inset-0 z-40 md:hidden" @click.self="emit('close')">
+        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" />
+        <aside
+          class="fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-gradient-to-b from-indigo-100 via-violet-100 to-fuchsia-100 p-4 shadow-2xl"
+        >
+          <div class="mb-6 flex items-center justify-between">
+            <p class="text-sm font-bold text-indigo-700">Menu</p>
+            <button
+              type="button"
+              class="rounded-lg p-1.5 text-slate-500 transition hover:bg-white/60"
+              @click="emit('close')"
+            >
+              <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <nav class="space-y-3">
+            <RouterLink
+              v-for="item in navItems"
+              :key="item.name"
+              :class="navClass(item)"
+              :to="item.to"
+              @click="emit('close')"
+            >
+              <span class="text-base">{{ item.icon }}</span>
+              <span>{{ item.label }}</span>
+            </RouterLink>
+          </nav>
+        </aside>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
 import { RouterLink, useRoute } from 'vue-router'
+
+defineProps<{ open: boolean }>()
+const emit = defineEmits<{ close: [] }>()
 
 const route = useRoute()
 
@@ -50,3 +89,22 @@ function navClass(item: (typeof navItems)[number]): string {
   return `${base} ${inactiveStyles[item.name]}`
 }
 </script>
+
+<style scoped>
+.drawer-enter-active,
+.drawer-leave-active {
+  transition: opacity 0.25s ease;
+}
+.drawer-enter-active aside,
+.drawer-leave-active aside {
+  transition: transform 0.25s ease;
+}
+.drawer-enter-from,
+.drawer-leave-to {
+  opacity: 0;
+}
+.drawer-enter-from aside,
+.drawer-leave-to aside {
+  transform: translateX(-100%);
+}
+</style>

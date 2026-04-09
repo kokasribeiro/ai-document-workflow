@@ -1,14 +1,25 @@
 <template>
   <header
-    class="sticky top-0 z-20 border-b border-white/30 bg-white/80 px-6 py-4 shadow-sm backdrop-blur"
+    class="sticky top-0 z-20 border-b border-white/30 bg-white/80 px-4 py-3 shadow-sm backdrop-blur md:px-6 md:py-4"
   >
-    <div class="flex items-center justify-between">
-      <h1
-        class="bg-gradient-to-r from-indigo-700 via-violet-700 to-purple-700 bg-clip-text text-2xl font-extrabold text-transparent"
-      >
-        AI Document Workflow System
-      </h1>
+    <div class="flex items-center justify-between gap-3">
       <div class="flex items-center gap-3">
+        <!-- Mobile hamburger -->
+        <button
+          type="button"
+          class="rounded-lg p-1.5 text-slate-600 transition hover:bg-slate-100 md:hidden"
+          @click="emit('toggle-menu')"
+        >
+          <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+        </button>
+        <h1
+          class="bg-gradient-to-r from-indigo-700 via-violet-700 to-purple-700 bg-clip-text text-lg font-extrabold text-transparent md:text-2xl"
+        >
+          <span class="hidden sm:inline">AI Document Workflow</span>
+          <span class="sm:hidden">AI DocFlow</span>
+        </h1>
+      </div>
+      <div class="flex items-center gap-2 md:gap-3">
         <!-- Notification bell -->
         <div v-if="auth.user" class="relative" ref="bellRef">
           <button
@@ -29,7 +40,7 @@
 
           <div
             v-if="bellOpen"
-            class="absolute right-0 z-30 mt-2 w-80 rounded-xl border border-slate-200 bg-white shadow-xl"
+            class="absolute right-0 z-30 mt-2 w-72 rounded-xl border border-slate-200 bg-white shadow-xl sm:w-80"
           >
             <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
               <p class="text-sm font-semibold text-slate-800">Notifications</p>
@@ -74,12 +85,12 @@
 
         <span
           v-if="auth.user"
-          class="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700"
+          class="hidden rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700 sm:inline-flex"
         >
           {{ auth.user.username || auth.user.email }} ({{ auth.user.role }})
         </span>
         <button
-          class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+          class="rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 md:px-3 md:text-sm"
           @click="logout"
         >
           Logout
@@ -95,6 +106,8 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/authStore'
 import { useNotificationStore } from '../../stores/notificationStore'
 import type { Notification } from '../../services/notificationService'
+
+const emit = defineEmits<{ 'toggle-menu': [] }>()
 
 const router = useRouter()
 const auth = useAuthStore()
