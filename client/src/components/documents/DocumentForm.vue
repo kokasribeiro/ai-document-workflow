@@ -95,6 +95,28 @@ const submitError = ref('')
 const fileName = ref('')
 const fileError = ref('')
 
+const FAKE_DOCUMENTS: { title: string; description: string }[] = [
+  { title: 'Invoice #78432 - Cloud Hosting Services', description: 'Monthly cloud infrastructure hosting for production and staging environments. Includes 4 dedicated servers, managed database cluster, CDN bandwidth (2.5TB), SSL certificates, and 24/7 monitoring. Billing period: March 1-31, 2026. Total amount: €4,320.00. Payment terms: Net 30.' },
+  { title: 'Employee Onboarding Checklist - Q2 2026', description: 'Standard onboarding procedure for new hires joining in Q2 2026. Covers IT setup (laptop, email, VPN access), HR orientation (benefits enrollment, company policies), team introductions, mentor assignment, and 30/60/90 day performance milestones. Applies to 8 incoming employees across Engineering and Marketing.' },
+  { title: 'Q1 2026 Revenue Report', description: 'Quarterly revenue analysis for January through March 2026. Total revenue: €1.2M (+18% YoY). SaaS subscriptions account for 72% of revenue, professional services 20%, and training workshops 8%. Customer churn decreased to 3.1%. Top-performing regions: EMEA (45%), North America (38%), APAC (17%). Three enterprise deals closed above €50K.' },
+  { title: 'Software License Agreement - DataVault Pro', description: 'Enterprise software license agreement between our company and DataVault Technologies Inc. Covers 150 user seats for DataVault Pro analytics platform. License period: 12 months starting April 2026. Annual fee: €28,500. Includes premium support, quarterly updates, and data migration assistance. Auto-renewal clause with 60-day cancellation notice.' },
+  { title: 'Office Lease Renewal Contract', description: 'Renewal of commercial office lease at Rua Augusta 47, 3rd Floor, Lisbon. Lease term: 36 months (May 2026 - April 2029). Monthly rent: €6,200 including building maintenance. Tenant improvement allowance: €15,000. Includes 12 parking spaces and access to rooftop terrace. Break clause available at month 18 with 3-month notice.' },
+  { title: 'Annual Security Audit Report', description: 'Comprehensive security assessment conducted by CyberShield Partners. Scope: network infrastructure, web applications, API endpoints, and employee security practices. Key findings: 2 critical vulnerabilities patched, 5 medium-risk issues addressed, overall security posture rated B+ (improved from B). Penetration testing passed. SOC 2 Type II compliance confirmed.' },
+  { title: 'Marketing Campaign Budget - Summer 2026', description: 'Proposed budget allocation for the summer 2026 marketing campaign "Innovation Days". Total budget: €85,000. Breakdown: Digital advertising (€35,000), event sponsorships (€20,000), content production (€15,000), influencer partnerships (€10,000), print materials (€5,000). Expected ROI: 3.2x based on Q3 2025 benchmark campaign.' },
+  { title: 'Invoice #78501 - Legal Consulting', description: 'Professional legal services rendered for GDPR compliance review and contract template updates. 42 billable hours at €180/hour. Services include: privacy policy revision, data processing agreements for 3 new vendors, employee data handling procedures, and cookie consent implementation review. Total: €7,560.00. Payment due: April 30, 2026.' },
+  { title: 'Remote Work Policy Update 2026', description: 'Updated company-wide remote work policy effective May 1, 2026. Key changes: hybrid model (3 office days minimum for local employees), home office stipend increased to €75/month, quarterly in-person team events mandatory, core collaboration hours set to 10:00-16:00 CET. Applies to all full-time employees. Equipment return policy for departing remote workers included.' },
+  { title: 'Vendor Performance Evaluation - Q1 2026', description: 'Quarterly assessment of top 10 vendors by spend. Highlights: CloudStack (hosting) rated Excellent - 99.97% uptime. OfficeSupply.eu rated Satisfactory - 2 late deliveries. CleanPro (facilities) rated Good - consistent quality. Recommendation: renegotiate CloudStack contract for volume discount, issue formal warning to OfficeSupply.eu, renew CleanPro for 12 months.' },
+]
+
+function fillFakeDocument() {
+  const fake = FAKE_DOCUMENTS[Math.floor(Math.random() * FAKE_DOCUMENTS.length)]!
+  const randomCategory = DOCUMENT_CATEGORIES[Math.floor(Math.random() * DOCUMENT_CATEGORIES.length)]
+  title.value = fake.title
+  description.value = fake.description
+  category.value = randomCategory ?? DEFAULT_DOCUMENT_CATEGORY
+  aiSummary.value = ''
+}
+
 async function runAiOp<T>(
   operation: () => Promise<T>,
   onSuccess: (value: T) => void,
