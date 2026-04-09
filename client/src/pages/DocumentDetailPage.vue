@@ -1,17 +1,17 @@
 <template>
   <section>
-    <h2 class="mb-6 text-3xl font-bold tracking-tight text-slate-800">Document Detail</h2>
+    <h2 class="mb-4 text-2xl font-bold tracking-tight text-slate-800 md:mb-6 md:text-3xl">Document Detail</h2>
     <p v-if="loading" class="text-sm text-slate-500">Loading document...</p>
     <p v-else-if="error" class="text-sm text-rose-600">{{ error }}</p>
-    <div v-else-if="document" class="space-y-4 rounded-2xl border border-slate-200/70 bg-white p-6 shadow-sm">
+    <div v-else-if="document" class="space-y-4 rounded-xl border border-slate-200/70 bg-white p-4 shadow-sm md:rounded-2xl md:p-6">
       <p v-if="statusError" class="text-sm text-rose-600">{{ statusError }}</p>
       <p v-if="statusSuccess" class="text-sm text-emerald-700">{{ statusSuccess }}</p>
-      <div class="flex items-start justify-between gap-3">
-        <div>
-          <h3 class="text-xl font-semibold">{{ document.title }}</h3>
+      <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+        <div class="min-w-0">
+          <h3 class="text-lg font-semibold md:text-xl">{{ document.title }}</h3>
           <p class="text-sm text-slate-500">{{ document.category }}</p>
         </div>
-        <StatusBadge :status="document.status" />
+        <StatusBadge :status="document.status" class="self-start" />
       </div>
 
       <p class="text-slate-700">{{ document.description }}</p>
@@ -29,22 +29,22 @@
         <p class="mt-1 text-sm text-slate-700">{{ document.aiSummary }}</p>
       </div>
 
-      <div class="flex flex-wrap gap-3">
+      <div class="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:gap-3">
         <template v-if="auth.isCEO">
-          <DocumentStatusSelect v-model="nextStatus" :wide="false" />
+          <DocumentStatusSelect v-model="nextStatus" :wide="false" class="col-span-2" />
           <button
             type="button"
-            class="rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 font-medium text-white shadow transition hover:-translate-y-0.5 hover:from-indigo-500 hover:to-violet-500 disabled:cursor-not-allowed disabled:opacity-50"
+            class="col-span-2 rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2.5 text-sm font-medium text-white shadow transition hover:-translate-y-0.5 hover:from-indigo-500 hover:to-violet-500 disabled:cursor-not-allowed disabled:opacity-50 sm:col-span-1"
             :disabled="nextStatus === document.status"
             @click="handleStatusSave"
           >
             Save Changes
           </button>
         </template>
-        <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 font-medium text-slate-700 transition hover:bg-slate-100" @click="toggleEdit">
+        <button type="button" class="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100" @click="toggleEdit">
           {{ isEditing ? 'Cancel Edit' : 'Edit' }}
         </button>
-        <button type="button" class="rounded-lg border border-rose-300 px-4 py-2 font-medium text-rose-700 transition hover:bg-rose-50" @click="handleDelete">
+        <button type="button" class="rounded-lg border border-rose-300 px-4 py-2.5 text-sm font-medium text-rose-700 transition hover:bg-rose-50" @click="handleDelete">
           Delete
         </button>
       </div>
@@ -89,17 +89,17 @@
         </div>
         <p v-else class="mb-4 text-sm text-slate-400">No comments yet. Start the conversation.</p>
 
-        <form class="flex gap-2" @submit.prevent="handleAddComment">
+        <form class="flex flex-col gap-2 sm:flex-row" @submit.prevent="handleAddComment">
           <input
             v-model="newComment"
-            class="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+            class="flex-1 rounded-lg border border-slate-200 px-3 py-2.5 text-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
             type="text"
             placeholder="Write a comment..."
             :disabled="addingComment"
           />
           <button
             type="submit"
-            class="rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-sm font-medium text-white shadow transition hover:-translate-y-0.5 hover:from-indigo-500 hover:to-violet-500 disabled:cursor-not-allowed disabled:opacity-50"
+            class="w-full rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2.5 text-sm font-medium text-white shadow transition hover:-translate-y-0.5 hover:from-indigo-500 hover:to-violet-500 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
             :disabled="!newComment.trim() || addingComment"
           >
             {{ addingComment ? 'Sending...' : 'Send' }}

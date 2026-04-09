@@ -36,10 +36,10 @@
         v-motion
         :initial="{ opacity: 0, y: 24 }"
         :enter="{ opacity: 1, y: 0, transition: { duration: 400, delay: 140 } }"
-        class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm"
+        class="rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm md:rounded-2xl md:p-5"
       >
-        <div class="mb-4 flex items-center justify-between">
-          <h3 class="text-lg font-semibold text-slate-800">Recent Documents</h3>
+        <div class="mb-3 flex items-center justify-between md:mb-4">
+          <h3 class="text-base font-semibold text-slate-800 md:text-lg">Recent Documents</h3>
           <RouterLink
             to="/documents"
             class="rounded-md px-3 py-1.5 text-sm font-medium text-indigo-700 transition hover:bg-indigo-50"

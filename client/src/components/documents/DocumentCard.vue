@@ -1,10 +1,10 @@
 <template>
-  <article class="rounded-2xl border border-slate-200/70 bg-white p-4 shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-lg">
-    <div class="flex items-start justify-between gap-4">
-      <div>
-        <h3 class="text-lg font-semibold">{{ document.title }}</h3>
-        <p class="text-sm text-slate-500">{{ document.category }}</p>
-        <p class="mt-1 text-sm text-slate-400">Created: {{ document.createdAt }}</p>
+  <article class="rounded-xl border border-slate-200/70 bg-white p-3 shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-lg sm:p-4 md:rounded-2xl">
+    <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+      <div class="min-w-0">
+        <h3 class="text-base font-semibold sm:text-lg">{{ document.title }}</h3>
+        <p class="text-xs text-slate-500 sm:text-sm">{{ document.category }}</p>
+        <p class="mt-0.5 text-xs text-slate-400 sm:mt-1 sm:text-sm">Created: {{ document.createdAt }}</p>
       </div>
 
       <div v-if="auth.isCEO" class="relative" ref="dropdownRef">

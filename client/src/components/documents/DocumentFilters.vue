@@ -1,5 +1,5 @@
 <template>
-  <div class="mb-4 grid gap-3 rounded-2xl border border-slate-200/70 bg-white/90 p-4 shadow-sm md:grid-cols-3">
+  <div class="mb-4 grid gap-3 rounded-xl border border-slate-200/70 bg-white/90 p-3 shadow-sm md:rounded-2xl md:p-4 md:grid-cols-3">
     <input
       v-model="store.search"
       class="rounded-lg border border-slate-200 px-3 py-2 transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"

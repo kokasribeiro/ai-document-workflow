@@ -1,8 +1,8 @@
 <template>
-  <section class="mx-auto max-w-md">
-    <div class="rounded-2xl border border-slate-200/70 bg-white p-6 shadow-sm">
-      <h2 class="mb-1 text-2xl font-bold text-slate-800">Welcome</h2>
-      <p class="mb-6 text-sm text-slate-500">Sign in or create an account to continue.</p>
+  <section class="mx-auto w-full max-w-md">
+    <div class="rounded-2xl border border-slate-200/70 bg-white p-5 shadow-sm sm:p-6">
+      <h2 class="mb-1 text-xl font-bold text-slate-800 sm:text-2xl">Welcome</h2>
+      <p class="mb-5 text-sm text-slate-500 sm:mb-6">Sign in or create an account to continue.</p>
 
       <div class="mb-4 flex gap-2">
         <button
