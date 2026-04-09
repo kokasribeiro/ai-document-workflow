@@ -7,8 +7,10 @@
         <p class="rounded-lg bg-slate-50 px-3 py-2 text-slate-800">{{ profile.email || '-' }}</p>
         <p class="text-sm text-slate-500">Username</p>
         <p class="rounded-lg bg-slate-50 px-3 py-2 text-slate-800">{{ profile.username || '-' }}</p>
-        <p class="text-sm text-slate-500">Name</p>
-        <p class="rounded-lg bg-slate-50 px-3 py-2 text-slate-800">{{ profile.name || '-' }}</p>
+        <template v-if="auth.user?.role === 'CEO'">
+          <p class="text-sm text-slate-500">Name</p>
+          <p class="rounded-lg bg-slate-50 px-3 py-2 text-slate-800">{{ profile.name || '-' }}</p>
+        </template>
         <p class="text-sm text-slate-500">Address</p>
         <p class="rounded-lg bg-slate-50 px-3 py-2 text-slate-800">{{ profile.address || '-' }}</p>
         <p class="text-sm text-slate-500">Phone</p>

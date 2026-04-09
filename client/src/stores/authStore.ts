@@ -1,8 +1,6 @@
 import { defineStore } from 'pinia'
 import { getMe, login, register, updateProfile } from '../services/authService'
 
-export type UserRole = 'CEO' | 'USER'
-
 export interface AuthUser {
   id: string
   email: string
@@ -11,7 +9,7 @@ export interface AuthUser {
   address: string
   phone: string
   birthDate: string
-  role: UserRole
+  role: 'CEO' | 'USER'
 }
 
 export const useAuthStore = defineStore('auth', {

@@ -1,15 +1,12 @@
-import dotenv from 'dotenv'
 import { readFileSync, writeFileSync } from 'fs'
 import path from 'path'
 import crypto from 'crypto'
 import { Prisma } from '@prisma/client'
 import { prisma } from '../lib/prisma'
 
-dotenv.config()
+type UserRole = 'CEO' | 'USER'
 
-export type UserRole = 'CEO' | 'USER'
-
-export interface AppUser {
+interface AppUser {
   id: string
   email: string
   username: string
@@ -21,14 +18,14 @@ export interface AppUser {
   role: UserRole
 }
 
-export interface CreateUserInput {
+interface CreateUserInput {
   email: string
   username: string
   birthDate: string
   password: string
 }
 
-export interface UpdateProfileInput {
+interface UpdateProfileInput {
   email?: string
   username?: string
   name?: string

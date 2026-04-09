@@ -58,18 +58,16 @@
               <p class="text-xs text-slate-500">{{ doc.category }}</p>
             </div>
 
-            <div v-if="auth.isCEO" class="relative">
+            <div v-if="auth.isCEO" class="relative" ref="dropdownRefs">
               <button
                 type="button"
-                class="cursor-pointer rounded-full px-2.5 py-1 text-xs font-medium transition hover:ring-2 hover:ring-indigo-300"
-                :class="statusBadgeClass(doc.status)"
+                class="cursor-pointer transition hover:ring-2 hover:ring-indigo-300"
                 @click="toggleDropdown(doc.id)"
               >
-                {{ doc.status }}
+                <StatusBadge :status="doc.status" />
               </button>
               <div
                 v-if="openDropdownId === doc.id"
-                v-click-outside="() => (openDropdownId = null)"
                 class="absolute right-0 z-20 mt-1 min-w-[140px] rounded-lg border border-slate-200 bg-white py-1 shadow-lg"
               >
                 <button
@@ -80,15 +78,13 @@
                   :class="s === doc.status ? 'font-semibold text-indigo-600' : 'text-slate-700'"
                   @click="changeStatus(doc.id, s)"
                 >
-                  <span class="rounded-full px-2 py-0.5 text-xs font-medium" :class="statusBadgeClass(s)">{{ s }}</span>
+                  <StatusBadge :status="s" />
                   <span v-if="s === doc.status" class="ml-auto text-xs text-indigo-400">current</span>
                 </button>
               </div>
             </div>
 
-            <span v-else class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">
-              {{ doc.status }}
-            </span>
+            <StatusBadge v-else :status="doc.status" />
           </div>
           <p v-if="!recentDocuments.length" class="text-sm text-slate-500">
             No documents yet.
@@ -115,9 +111,12 @@ import { useAuthStore } from '../stores/authStore'
 import { useDocumentStore } from '../stores/documentStore'
 import type { DocumentStatus } from '../types/document'
 import AiSummaryPanel from '../components/ai/AiSummaryPanel.vue'
+import StatusBadge from '../components/documents/StatusBadge.vue'
 
 const auth = useAuthStore()
 const store = useDocumentStore()
+const dropdownRefs = ref<HTMLElement | null>(null)
+const openDropdownId = ref<string | null>(null)
 
 onMounted(() => {
   store.fetchDocuments()
@@ -127,38 +126,20 @@ onBeforeUnmount(() => {
   document.removeEventListener('click', handleOutsideClick, true)
 })
 
-const openDropdownId = ref<string | null>(null)
-
 function toggleDropdown(docId: string) {
   openDropdownId.value = openDropdownId.value === docId ? null : docId
 }
 
 async function changeStatus(docId: string, newStatus: DocumentStatus) {
-  const doc = store.items.find((d) => d.id === docId)
   openDropdownId.value = null
+  const doc = store.items.find((d) => d.id === docId)
   if (!doc || doc.status === newStatus) return
   await store.editDocument(docId, { status: newStatus })
 }
 
 function handleOutsideClick(e: MouseEvent) {
-  const target = e.target as HTMLElement
-  if (!target.closest('.relative')) {
+  if (dropdownRefs.value && !dropdownRefs.value.contains(e.target as Node)) {
     openDropdownId.value = null
-  }
-}
-
-function statusBadgeClass(status: DocumentStatus): string {
-  switch (status) {
-    case 'Draft':
-      return 'bg-slate-200 text-slate-700'
-    case 'Review':
-      return 'bg-amber-100 text-amber-700'
-    case 'Approved':
-      return 'bg-emerald-100 text-emerald-700'
-    case 'Rejected':
-      return 'bg-rose-100 text-rose-700'
-    default:
-      return 'bg-slate-100 text-slate-600'
   }
 }
 

@@ -11,6 +11,10 @@ import {
 } from '../auth/authStore'
 import { isAtLeastAge } from '../utils/age'
 
+function toUserJSON(user: { id: string; email: string; username: string; name: string; address: string; phone: string; birthDate: string; role: string }) {
+  return { id: user.id, email: user.email, username: user.username, name: user.name, address: user.address, phone: user.phone, birthDate: user.birthDate, role: user.role }
+}
+
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
@@ -64,19 +68,7 @@ export async function register(req: Request, res: Response): Promise<void> {
       password: parsed.data.password,
     })
     const session = await createSession(user.id)
-    res.status(201).json({
-      token: session.token,
-      user: {
-        id: user.id,
-        email: user.email,
-        username: user.username,
-        name: user.name,
-        address: user.address,
-        phone: user.phone,
-        birthDate: user.birthDate,
-        role: user.role,
-      },
-    })
+    res.status(201).json({ token: session.token, user: toUserJSON(user) })
   } catch (e) {
     const message = e instanceof Error ? e.message : 'Register failed'
     res.status(400).json({ error: message })
@@ -95,19 +87,7 @@ export async function login(req: Request, res: Response): Promise<void> {
     return
   }
   const session = await createSession(user.id)
-  res.json({
-    token: session.token,
-    user: {
-      id: user.id,
-      email: user.email,
-      username: user.username,
-      name: user.name,
-      address: user.address,
-      phone: user.phone,
-      birthDate: user.birthDate,
-      role: user.role,
-    },
-  })
+  res.json({ token: session.token, user: toUserJSON(user) })
 }
 
 export async function me(req: Request, res: Response): Promise<void> {
@@ -120,16 +100,7 @@ export async function me(req: Request, res: Response): Promise<void> {
     res.status(404).json({ error: 'User not found' })
     return
   }
-  res.json({
-    id: user.id,
-    email: user.email,
-    username: user.username,
-    name: user.name,
-    address: user.address,
-    phone: user.phone,
-    birthDate: user.birthDate,
-    role: user.role,
-  })
+  res.json(toUserJSON(user))
 }
 
 export async function updateProfile(req: Request, res: Response): Promise<void> {
@@ -159,16 +130,7 @@ export async function updateProfile(req: Request, res: Response): Promise<void> 
           }
 
     const user = await updateUserProfile(req.user.id, updateData)
-    res.json({
-      id: user.id,
-      email: user.email,
-      username: user.username,
-      name: user.name,
-      address: user.address,
-      phone: user.phone,
-      birthDate: user.birthDate,
-      role: user.role,
-    })
+    res.json(toUserJSON(user))
   } catch (e) {
     const message = e instanceof Error ? e.message : 'Profile update failed'
     res.status(400).json({ error: message })
