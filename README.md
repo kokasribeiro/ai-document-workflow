@@ -1,158 +1,265 @@
 # AI Document Workflow
 
-A full-stack document workflow platform designed to organize business documents, streamline review processes, and enrich records with AI-assisted analysis.
+A full-stack document management platform with role-based approval workflows, real-time notifications, and AI-assisted document processing. Built with Vue 3, Node.js, and PostgreSQL.
 
-## Project Purpose
+---
 
-This application was built to demonstrate practical full-stack engineering skills in a realistic business context.  
-The core objective is to provide a structured environment where teams can:
+## What Does This App Do?
 
-- register and authenticate users,
-- centralize document management,
-- apply role-based governance for approvals,
-- and accelerate document understanding with AI-generated support.
+In most companies, documents like invoices, contracts, reports, and HR files go through a manual review process — someone creates a document, sends it for approval, and waits for feedback. This application digitises that entire workflow.
 
-## What You Can Do With This Application
+**A regular user** can sign up, create business documents (or upload a PDF), and submit them for review. The app can automatically generate an AI summary and suggest the right category. Once submitted, the user receives a notification whenever the CEO takes action on their document, and can communicate directly via comments.
 
-- Create, read, update, and delete business documents.
-- Upload PDF files and auto-extract text content into the document form.
-- Generate concise AI summaries from document text.
-- Request AI-based category suggestions (`Invoice`, `Contract`, `Report`, `HR`).
-- Manage personal profile data and password updates.
-- Enforce role-based workflows:
-  - `USER` can manage personal documents.
-  - `CEO` can view all documents and control status transitions (`Draft`, `Review`, `Approved`, `Rejected`).
+**The CEO** sees every document across the organisation in a centralised dashboard. They can approve, reject, or request changes by updating the document status — either from the dashboard with a single click or from the detail page. When a new document is submitted, the CEO gets an instant notification. They can also leave comments to explain decisions or ask for more information.
+
+The result is a transparent, traceable workflow where every document has a clear owner, a defined status, a full comment history, and automatic notifications — eliminating back-and-forth emails and lost documents.
+
+---
+
+## Overview
+
+### Key capabilities
+
+- **Document lifecycle management** — create, edit, delete, and track documents through Draft, Review, Approved, and Rejected states
+- **Role-based access control** — two distinct roles (CEO and User) with different permissions and views
+- **Approval workflow** — CEO reviews and changes document status directly from the dashboard or detail view
+- **Notification system** — automatic alerts when documents are submitted (CEO) or status changes (User)
+- **Comment system** — threaded communication between CEO and document owner on each document
+- **AI integration** — automatic document summarisation and category suggestion via local LLM
+- **PDF upload** — in-browser text extraction from uploaded PDF files
+- **Secure authentication** — bcrypt password hashing, token-based sessions, protected routes
+
+---
 
 ## Technology Stack
 
 ### Frontend
 
-- Vue 3 (Composition API + TypeScript)
-- Vite
-- Vue Router
-- Pinia
-- Tailwind CSS
-- `pdfjs-dist` for in-browser PDF text extraction
+| Technology | Purpose |
+|---|---|
+| Vue 3 | UI framework (Composition API, `<script setup>`, TypeScript) |
+| Pinia | State management (auth, documents, notifications) |
+| Vue Router | Client-side routing with auth guards |
+| Tailwind CSS 4 | Utility-first styling |
+| Vite | Build tool and dev server |
+| pdfjs-dist | In-browser PDF text extraction |
 
 ### Backend
 
-- Node.js + Express + TypeScript
-- Prisma ORM
-- PostgreSQL
-- Zod for input validation
-- CORS + JSON REST APIs
+| Technology | Purpose |
+|---|---|
+| Node.js + Express 5 | REST API server |
+| TypeScript | Type safety across the stack |
+| Prisma ORM | Database access and migrations |
+| PostgreSQL | Relational data storage |
+| Zod | Request payload validation |
+| bcrypt | Password hashing |
 
-### AI Integration
+### AI
 
-- Local LLM inference via Ollama
-- Configurable model and endpoint through environment variables
-- Dedicated endpoints for summarization and category suggestion
+| Technology | Purpose |
+|---|---|
+| Ollama | Local LLM inference |
+| Configurable endpoint | Summarisation and category suggestion |
 
-## System Architecture
+---
 
-- `client/`: single-page frontend application for authentication, dashboards, document operations, and profile management.
-- `server/`: REST API handling authentication, authorization, document lifecycle, and AI services.
-- `server/prisma/schema.prisma`: data model definitions for `User`, `Session`, and `Document`.
+## Architecture
 
-## Main Functional Areas
+```
+ai-document-workflow/
+├── client/                     # Vue 3 single-page application
+│   └── src/
+│       ├── components/         # Reusable UI components
+│       │   ├── ai/             # AI summary panel
+│       │   ├── documents/      # StatusBadge, DocumentCard, filters, selects
+│       │   └── layout/         # AppHeader, AppSidebar
+│       ├── pages/              # Route-level views
+│       ├── stores/             # Pinia stores (auth, documents, notifications)
+│       ├── services/           # API service layer
+│       ├── constants/          # Document categories and statuses
+│       ├── types/              # TypeScript type definitions
+│       └── utils/              # Helpers (PDF, age validation, text)
+│
+└── server/                     # Express REST API
+    ├── prisma/                 # Schema and migrations
+    └── src/
+        ├── auth/               # User management and session logic
+        ├── controllers/        # Route handlers
+        ├── middlewares/        # Auth guard, validation
+        ├── routes/             # Route definitions
+        ├── utils/              # Notifications, document access, helpers
+        └── lib/                # Prisma client instance
+```
 
-### Authentication and Authorization
+---
 
-- Account registration and login
-- Token-based session handling
-- Protected routes on frontend and backend
-- Role-aware permissions for sensitive actions (status management)
+## Data Model
 
-### Document Workflow
+| Model | Description |
+|---|---|
+| **User** | Email, username, birth date, profile data, role (CEO / USER), hashed password |
+| **Session** | Token-based authentication sessions linked to users |
+| **Document** | Title, description, category, status, owner, AI-generated fields, timestamps |
+| **Notification** | Per-user alerts with read/unread state, linked to documents |
+| **Comment** | Threaded messages on documents with author reference |
 
-- Structured metadata (`title`, `description`, `category`, `status`)
-- Ownership control to ensure users only access allowed records
-- Audit-friendly timestamps (`createdAt`, `updatedAt`)
+---
 
-### AI-Assisted Processing
+## User Roles
 
-- Document summary generation
-- Category recommendation to standardize classification
-- Input normalization and length limits before AI inference
+### CEO
+- Views all documents across the organisation
+- Changes document status (Draft → Review → Approved / Rejected)
+- Receives notifications when users submit new documents
+- Communicates with document owners via comments
 
-## Local Development Setup
+### User
+- Creates and manages personal documents
+- Uploads PDFs with automatic text extraction
+- Requests AI summaries and category suggestions
+- Receives notifications when document status changes
+- Communicates with CEO via comments
 
-### 1) Clone and install dependencies
+---
+
+## API Reference
+
+### Authentication
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/auth/register` | Create a new user account |
+| POST | `/auth/login` | Authenticate and receive session token |
+| GET | `/auth/me` | Get current user profile |
+| PUT | `/auth/profile` | Update profile information |
+| POST | `/auth/verify-password` | Verify current password |
+| PUT | `/auth/change-password` | Change password |
+
+### Documents
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/documents` | List documents (filtered by role) |
+| GET | `/documents/:id` | Get document details |
+| POST | `/documents` | Create a new document |
+| PUT | `/documents/:id` | Update document (status changes CEO-only) |
+| DELETE | `/documents/:id` | Delete a document |
+
+### Comments
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/documents/:id/comments` | List comments on a document |
+| POST | `/documents/:id/comments` | Add a comment to a document |
+
+### Notifications
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/notifications` | List user notifications |
+| GET | `/notifications/unread-count` | Get unread notification count |
+| PUT | `/notifications/:id/read` | Mark a notification as read |
+| PUT | `/notifications/read-all` | Mark all notifications as read |
+
+### AI
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/ai/summarize` | Generate document summary |
+| POST | `/ai/suggest-category` | Suggest document category |
+
+---
+
+## Local Development
+
+### Prerequisites
+
+- Node.js 20.19+ or 22.12+
+- PostgreSQL running on localhost:5432
+- Ollama running on localhost:11434 (optional, for AI features)
+
+### Setup
 
 ```bash
-git clone <your-repository-url>
+git clone <repository-url>
 cd ai-document-workflow
 
+# Install dependencies
 cd server && npm install
 cd ../client && npm install
 ```
 
-### 2) Prepare database
+### Environment Configuration
 
-From `server/`:
+Create `server/.env`:
 
-```bash
-npx prisma generate
-npx prisma db push
+```env
+DATABASE_URL="postgresql://<user>:<password>@localhost:5432/document_workflow"
+CEO_EMAIL="<ceo-email>"
+CEO_PASSWORD="<ceo-password>"
+OLLAMA_URL="http://localhost:11434"
 ```
 
-### 3) Start services
+Create `client/.env`:
 
-In separate terminals:
+```env
+VITE_API_BASE_URL="http://localhost:3001"
+```
+
+### Database
 
 ```bash
 cd server
-npm run dev
+npx prisma migrate dev
+```
+
+### Run
+
+In two separate terminals:
+
+```bash
+# Terminal 1 — API server
+cd server && npm run dev
 ```
 
 ```bash
-cd client
-npm run dev
+# Terminal 2 — Frontend
+cd client && npm run dev
 ```
 
-### 4) Open the application
+| Service | URL |
+|---|---|
+| Frontend | http://localhost:5173 |
+| API | http://localhost:3001 |
 
-- Frontend: `http://localhost:5173`
-- Backend API: `http://localhost:3001`
+---
 
-## API Overview
+## Engineering Highlights
 
-### Auth
+- **Type safety** — TypeScript across both client and server with strict type checking
+- **Centralised API layer** — single `apiRequest` function handles auth headers, error parsing, session expiry, and network errors
+- **Validation at the boundary** — Zod schemas validate every incoming request on the server
+- **Domain-separated stores** — Pinia stores for auth, documents, and notifications with clean boundaries
+- **Reusable components** — `PasswordInput`, `StatusBadge`, `CategorySelect`, `DocumentStatusSelect` used across multiple views
+- **Secure by default** — bcrypt password hashing, role checks on both client and server, ownership-scoped data access
+- **Automatic notifications** — triggered server-side when documents are created or status changes, with client-side polling
 
-- `POST /auth/register`
-- `POST /auth/login`
-- `GET /auth/me`
-- `PUT /auth/profile`
-- `POST /auth/verify-password`
-- `PUT /auth/change-password`
+---
 
-### Documents (authenticated)
+## Future Improvements
 
-- `GET /documents`
-- `GET /documents/:id`
-- `POST /documents`
-- `PUT /documents/:id`
-- `DELETE /documents/:id`
+- WebSocket integration for real-time notifications
+- Automated test coverage (unit, integration, e2e)
+- CI/CD pipeline (lint, type-check, test, build)
+- Document pagination and advanced search
+- File attachment storage (S3 / local)
+- Audit log for document state transitions
 
-### AI (authenticated)
-
-- `POST /ai/summarize`
-- `POST /ai/suggest-category`
-
-## Engineering Notes
-
-- The application uses a clear separation between UI, state management, API services, and persistence logic.
-- Validation is handled explicitly on the backend using Zod schemas.
-- The AI module is isolated to dedicated service endpoints to keep business logic clean and maintainable.
-
-## Suggested Future Improvements
-
-- Add password hashing and stronger security hardening.
-- Add automated test coverage (unit, integration, and e2e).
-- Introduce CI pipelines (lint, type-check, tests, build).
-- Add observability (structured logs, metrics, health checks).
+---
 
 ## Author
 
-Nelson Ribeiro  
-Full-stack developer project portfolio piece focused on applied business workflows and AI-assisted product features.
+**Nelson Ribeiro**
+
+Full-stack developer — Vue.js, TypeScript, Node.js, PostgreSQL.
