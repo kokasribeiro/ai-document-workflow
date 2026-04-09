@@ -7,7 +7,34 @@
         <p class="mt-1 text-sm text-slate-400">Created: {{ document.createdAt }}</p>
       </div>
 
-      <StatusBadge :status="document.status" />
+      <div v-if="auth.isCEO" class="relative" ref="dropdownRef">
+        <button
+          type="button"
+          class="cursor-pointer"
+          @click="dropdownOpen = !dropdownOpen"
+        >
+          <StatusBadge :status="document.status" class="transition hover:ring-2 hover:ring-indigo-300" />
+        </button>
+
+        <div
+          v-if="dropdownOpen"
+          class="absolute right-0 z-20 mt-1 min-w-[140px] rounded-lg border border-slate-200 bg-white py-1 shadow-lg"
+        >
+          <button
+            v-for="s in DOCUMENT_STATUSES"
+            :key="s"
+            type="button"
+            class="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm transition hover:bg-slate-50"
+            :class="s === document.status ? 'font-semibold text-indigo-600' : 'text-slate-700'"
+            @click="changeStatus(s)"
+          >
+            <StatusBadge :status="s" />
+            <span v-if="s === document.status" class="ml-auto text-xs text-indigo-400">current</span>
+          </button>
+        </div>
+      </div>
+
+      <StatusBadge v-else :status="document.status" />
     </div>
 
     <p class="mt-3 text-sm text-slate-600">
@@ -31,11 +58,36 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { RouterLink } from 'vue-router'
-import type { DocumentItem } from '../../types/document'
+import { DOCUMENT_STATUSES } from '../../constants/documents'
+import { useAuthStore } from '../../stores/authStore'
+import { useDocumentStore } from '../../stores/documentStore'
+import type { DocumentItem, DocumentStatus } from '../../types/document'
 import StatusBadge from './StatusBadge.vue'
 
-defineProps<{
+const props = defineProps<{
   document: DocumentItem
 }>()
+
+const auth = useAuthStore()
+const docs = useDocumentStore()
+
+const dropdownOpen = ref(false)
+const dropdownRef = ref<HTMLElement | null>(null)
+
+async function changeStatus(newStatus: DocumentStatus) {
+  dropdownOpen.value = false
+  if (newStatus === props.document.status) return
+  await docs.editDocument(props.document.id, { status: newStatus })
+}
+
+function onClickOutside(e: MouseEvent) {
+  if (dropdownRef.value && !dropdownRef.value.contains(e.target as Node)) {
+    dropdownOpen.value = false
+  }
+}
+
+onMounted(() => document.addEventListener('click', onClickOutside, true))
+onBeforeUnmount(() => document.removeEventListener('click', onClickOutside, true))
 </script>
