@@ -31,7 +31,7 @@
       </article>
     </div>
 
-    <div class="grid gap-6 xl:grid-cols-[2fr_1fr]">
+    <div class="grid gap-4 md:gap-6 xl:grid-cols-[2fr_1fr]">
       <section
         v-motion
         :initial="{ opacity: 0, y: 24 }"
