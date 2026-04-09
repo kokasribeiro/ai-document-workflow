@@ -34,6 +34,14 @@
 
       <button
         type="button"
+        class="rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-2 font-medium text-emerald-700 transition hover:bg-emerald-100"
+        @click="fillFakeDocument"
+      >
+        Create Fake Document
+      </button>
+
+      <button
+        type="button"
         class="rounded-lg border border-slate-300 px-4 py-2 font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
         :disabled="aiLoading"
         @click="handleAiSummary"
@@ -68,7 +76,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { DEFAULT_DOCUMENT_CATEGORY } from '../../constants/documents'
+import { DEFAULT_DOCUMENT_CATEGORY, DOCUMENT_CATEGORIES } from '../../constants/documents'
 import { useDocumentStore } from '../../stores/documentStore'
 import { summarizeDocument, suggestCategory } from '../../services/aiService'
 import { extractPdfText } from '../../utils/pdfText'
