@@ -19,8 +19,10 @@
           <span class="sm:hidden">AI DocFlow</span>
         </h1>
       </div>
-      <div class="flex items-center gap-2 md:gap-3">
-        <!-- Notification bell -->
+
+      <!-- Desktop-only actions -->
+      <div class="hidden items-center gap-3 md:flex">
+        <!-- Notification bell (desktop) -->
         <div v-if="auth.user" class="relative" ref="bellRef">
           <button
             type="button"
@@ -40,7 +42,7 @@
 
           <div
             v-if="bellOpen"
-            class="absolute right-0 z-30 mt-2 w-72 rounded-xl border border-slate-200 bg-white shadow-xl sm:w-80"
+            class="absolute right-0 z-30 mt-2 w-80 rounded-xl border border-slate-200 bg-white shadow-xl"
           >
             <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
               <p class="text-sm font-semibold text-slate-800">Notifications</p>
@@ -85,17 +87,32 @@
 
         <span
           v-if="auth.user"
-          class="hidden rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700 sm:inline-flex"
+          class="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700"
         >
           {{ auth.user.username || auth.user.email }} ({{ auth.user.role }})
         </span>
         <button
-          class="rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 md:px-3 md:text-sm"
+          class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
           @click="logout"
         >
           Logout
         </button>
       </div>
+
+      <!-- Mobile: just notification dot indicator -->
+      <button
+        v-if="auth.user && notifications.unreadCount > 0"
+        type="button"
+        class="relative rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 md:hidden"
+        @click="emit('toggle-menu')"
+      >
+        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+        </svg>
+        <span class="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">
+          {{ notifications.unreadCount > 9 ? '9+' : notifications.unreadCount }}
+        </span>
+      </button>
     </div>
   </header>
 </template>
