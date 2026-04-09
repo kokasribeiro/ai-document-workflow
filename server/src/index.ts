@@ -4,6 +4,7 @@ import dotenv from 'dotenv'
 import documentRoutes from './routes/documentRoutes'
 import aiRoutes from './routes/aiRoutes'
 import authRoutes from './routes/authRoutes'
+import notificationRoutes from './routes/notificationRoutes'
 import { requireAuth } from './middlewares/auth'
 import { ensureSeedCeo } from './auth/authStore'
 
@@ -21,6 +22,7 @@ app.get('/', (req, res) => {
 
 app.use('/auth', authRoutes)
 app.use('/documents', documentRoutes)
+app.use('/notifications', notificationRoutes)
 app.use('/ai', requireAuth, aiRoutes)
 
 async function start(): Promise<void> {
