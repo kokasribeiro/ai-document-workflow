@@ -215,5 +215,29 @@ async function handleStatusSave(): Promise<void> {
   }
 }
 
+async function handleAddComment(): Promise<void> {
+  if (!document.value || !newComment.value.trim()) return
+  addingComment.value = true
+  try {
+    const comment = await addComment(document.value.id, newComment.value.trim())
+    comments.value.push(comment)
+    newComment.value = ''
+  } catch {
+    // Silently fail — user can retry
+  } finally {
+    addingComment.value = false
+  }
+}
+
+function formatTime(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime()
+  const mins = Math.floor(diff / 60_000)
+  if (mins < 1) return 'Just now'
+  if (mins < 60) return `${mins}m ago`
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return `${hours}h ago`
+  return `${Math.floor(hours / 24)}d ago`
+}
+
 void loadDocument()
 </script>

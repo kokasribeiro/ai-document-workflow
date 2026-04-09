@@ -1,8 +1,11 @@
 import { readFileSync, writeFileSync } from 'fs'
 import path from 'path'
 import crypto from 'crypto'
+import bcrypt from 'bcrypt'
 import { Prisma } from '@prisma/client'
 import { prisma } from '../lib/prisma'
+
+const SALT_ROUNDS = 10
 
 type UserRole = 'CEO' | 'USER'
 
@@ -86,6 +89,7 @@ export async function ensureSeedCeo(): Promise<void> {
     return
   }
 
+  const hashedPassword = await bcrypt.hash(ceoPassword, SALT_ROUNDS)
   await prisma.user.create({
     data: {
       email: ceoEmail,
@@ -94,7 +98,7 @@ export async function ensureSeedCeo(): Promise<void> {
       name: ceoName,
       address: '',
       phone: '',
-      password: ceoPassword,
+      password: hashedPassword,
       role: 'CEO',
     },
   })
@@ -111,6 +115,7 @@ export async function createUser(input: CreateUserInput): Promise<AppUser> {
   const existingUsername = await prisma.user.findUnique({ where: { username } })
   if (existingUsername) throw new Error('Username already registered')
   try {
+    const hashedPassword = await bcrypt.hash(input.password, SALT_ROUNDS)
     const user = await prisma.user.create({
       data: {
         email,
@@ -119,7 +124,7 @@ export async function createUser(input: CreateUserInput): Promise<AppUser> {
         name: '',
         address: '',
         phone: '',
-        password: input.password,
+        password: hashedPassword,
         role: 'USER',
       },
     })
@@ -191,7 +196,7 @@ export async function updateUserProfile(
 export async function verifyUserPassword(userId: string, oldPassword: string): Promise<boolean> {
   const user = await prisma.user.findUnique({ where: { id: userId } })
   if (!user) return false
-  return user.password === oldPassword
+  return bcrypt.compare(oldPassword, user.password)
 }
 
 export async function changeUserPassword(
@@ -201,10 +206,12 @@ export async function changeUserPassword(
 ): Promise<void> {
   const user = await prisma.user.findUnique({ where: { id: userId } })
   if (!user) throw new Error('User not found')
-  if (user.password !== oldPassword) throw new Error('invalid password')
+  const valid = await bcrypt.compare(oldPassword, user.password)
+  if (!valid) throw new Error('invalid password')
+  const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS)
   await prisma.user.update({
     where: { id: userId },
-    data: { password: newPassword },
+    data: { password: hashedPassword },
   })
 
   if (user.role === 'CEO') {
@@ -227,10 +234,10 @@ function persistCeoPasswordToEnv(newPassword: string): void {
 }
 
 export async function authenticate(email: string, password: string): Promise<AppUser | null> {
-  const user = await prisma.user.findFirst({
-    where: { email: email.toLowerCase(), password },
-  })
-  return user ? mapUser(user) : null
+  const user = await prisma.user.findUnique({ where: { email: email.toLowerCase() } })
+  if (!user) return null
+  const valid = await bcrypt.compare(password, user.password)
+  return valid ? mapUser(user) : null
 }
 
 export async function createSession(userId: string): Promise<{ token: string; userId: string }> {
