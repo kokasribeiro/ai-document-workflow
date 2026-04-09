@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express'
 import type { Document } from '@prisma/client'
 import { prisma } from '../lib/prisma'
+import { notifyCeos, notifyDocumentOwner } from '../utils/notifications'
 import { canUserAccessDocument } from '../utils/documentAccess'
 import { paramId } from '../utils/params'
 
@@ -63,6 +64,14 @@ export async function createDocument(req: Request, res: Response): Promise<void>
         aiSuggestedCategory,
       },
     })
+
+    if (req.user?.role !== 'CEO') {
+      await notifyCeos(
+        `New document "${title}" submitted by ${req.user?.username || req.user?.email}`,
+        document.id,
+      )
+    }
+
     res.status(201).json(document)
   } catch {
     res.status(500).json({ error: 'Failed to create document' })
@@ -86,6 +95,15 @@ export async function updateDocument(req: Request, res: Response): Promise<void>
       where: { id },
       data: { title, description, category, status, aiSummary, aiSuggestedCategory },
     })
+
+    if (status && status !== existing.status && existing.ownerEmail) {
+      await notifyDocumentOwner(
+        existing.ownerEmail,
+        `Your document "${existing.title}" was changed to ${status}`,
+        existing.id,
+      )
+    }
+
     res.json(updated)
   } catch {
     res.status(500).json({ error: 'Failed to update document' })
