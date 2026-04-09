@@ -4,4 +4,13 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   plugins: [vue(), tailwindcss()],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'pdf-worker': ['pdfjs-dist'],
+        },
+      },
+    },
+  },
 })
