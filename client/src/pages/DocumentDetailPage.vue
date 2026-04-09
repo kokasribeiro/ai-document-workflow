@@ -61,6 +61,51 @@
           Save Changes
         </button>
       </form>
+      <!-- Comments section -->
+      <div class="mt-6 border-t border-slate-200 pt-6">
+        <h4 class="mb-4 text-lg font-semibold text-slate-800">Comments</h4>
+
+        <div v-if="comments.length" class="mb-4 space-y-3">
+          <div
+            v-for="c in comments"
+            :key="c.id"
+            class="rounded-xl border border-slate-100 p-3"
+            :class="c.author.role === 'CEO' ? 'bg-indigo-50/50 border-indigo-100' : 'bg-slate-50'"
+          >
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-semibold text-slate-800">
+                {{ c.author.username || c.author.email }}
+              </span>
+              <span
+                v-if="c.author.role === 'CEO'"
+                class="rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-bold text-indigo-700"
+              >
+                CEO
+              </span>
+              <span class="ml-auto text-xs text-slate-400">{{ formatTime(c.createdAt) }}</span>
+            </div>
+            <p class="mt-1 text-sm text-slate-700 whitespace-pre-line">{{ c.text }}</p>
+          </div>
+        </div>
+        <p v-else class="mb-4 text-sm text-slate-400">No comments yet. Start the conversation.</p>
+
+        <form class="flex gap-2" @submit.prevent="handleAddComment">
+          <input
+            v-model="newComment"
+            class="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+            type="text"
+            placeholder="Write a comment..."
+            :disabled="addingComment"
+          />
+          <button
+            type="submit"
+            class="rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-sm font-medium text-white shadow transition hover:-translate-y-0.5 hover:from-indigo-500 hover:to-violet-500 disabled:cursor-not-allowed disabled:opacity-50"
+            :disabled="!newComment.trim() || addingComment"
+          >
+            {{ addingComment ? 'Sending...' : 'Send' }}
+          </button>
+        </form>
+      </div>
     </div>
     <p v-else class="text-sm text-slate-500">Document not found.</p>
   </section>
