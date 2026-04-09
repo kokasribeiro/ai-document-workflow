@@ -7,7 +7,7 @@ import { prisma } from '../lib/prisma'
 
 const SALT_ROUNDS = 10
 
-type UserRole = 'CEO' | 'USER'
+export type UserRole = 'CEO' | 'USER'
 
 interface AppUser {
   id: string
@@ -76,6 +76,7 @@ export async function ensureSeedCeo(): Promise<void> {
   })
 
   if (existingCeo) {
+    const hashedPassword = await bcrypt.hash(ceoPassword, SALT_ROUNDS)
     await prisma.user.update({
       where: { id: existingCeo.id },
       data: {
@@ -83,6 +84,7 @@ export async function ensureSeedCeo(): Promise<void> {
         username: ceoUsername,
         birthDate: new Date(ceoBirthDate),
         name: ceoName,
+        password: hashedPassword,
         role: 'CEO',
       },
     })

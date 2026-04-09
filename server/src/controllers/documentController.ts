@@ -67,7 +67,7 @@ export async function createDocument(req: Request, res: Response): Promise<void>
 
     if (req.user?.role !== 'CEO') {
       await notifyCeos(
-        `New document "${title}" submitted by ${req.user?.username || req.user?.email}`,
+        `New document "${title}" submitted by ${req.user?.email}`,
         document.id,
       )
     }

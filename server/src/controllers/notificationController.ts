@@ -27,7 +27,7 @@ export async function getUnreadCount(req: Request, res: Response): Promise<void>
 
 export async function markAsRead(req: Request, res: Response): Promise<void> {
   try {
-    const { id } = req.params
+    const id = String(req.params.id)
     await prisma.notification.updateMany({
       where: { id, userId: req.user!.id },
       data: { read: true },

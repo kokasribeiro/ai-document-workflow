@@ -9,7 +9,7 @@ const createCommentSchema = z.object({
 
 export async function getComments(req: Request, res: Response): Promise<void> {
   try {
-    const { documentId } = req.params
+    const documentId = String(req.params.documentId)
     const document = await prisma.document.findUnique({ where: { id: documentId } })
     if (!document || !canUserAccessDocument(req.user, document)) {
       res.status(404).json({ error: 'Document not found' })
@@ -29,7 +29,7 @@ export async function getComments(req: Request, res: Response): Promise<void> {
 
 export async function addComment(req: Request, res: Response): Promise<void> {
   try {
-    const { documentId } = req.params
+    const documentId = String(req.params.documentId)
     const parsed = createCommentSchema.safeParse(req.body)
     if (!parsed.success) {
       res.status(400).json({ error: 'Comment text is required (max 2000 chars)' })
